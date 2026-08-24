@@ -1,0 +1,45 @@
+@media (max-width: 767px) {
+  .mobile-settings-embedded,
+  .mobile-patient-embedded {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .mobile-settings-embedded .grid-cols-2,
+  .mobile-settings-embedded .grid-cols-3,
+  .mobile-settings-embedded .grid-cols-4,
+  .mobile-patient-embedded .grid-cols-2,
+  .mobile-patient-embedded .grid-cols-3,
+  .mobile-patient-embedded .grid-cols-4 {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .mobile-settings-embedded .p-8,
+  .mobile-settings-embedded .p-7,
+  .mobile-settings-embedded .p-6,
+  .mobile-patient-embedded .p-8,
+  .mobile-patient-embedded .p-7,
+  .mobile-patient-embedded .p-6 {
+    padding: 1rem !important;
+  }
+
+  .mobile-settings-embedded .px-6,
+  .mobile-patient-embedded .px-6 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .mobile-settings-embedded table,
+  .mobile-patient-embedded table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .mobile-settings-embedded table::-webkit-scrollbar,
+  .mobile-patient-embedded table::-webkit-scrollbar {
+    display: none;
+  }
+}

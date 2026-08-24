@@ -1,0 +1,856 @@
+[
+  {
+    "name": "navigate_system",
+    "description": "Navega o usuário para uma tela específica do sistema NeuroNex. Use para abrir a agenda, ir para pacientes ou mostrar o financeiro.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Caminho da tela. Ex: /agenda, /financeiro, /pacientes, /pacientes/{id}"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Motivo da navegação"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "search_patients",
+    "description": "Busca pacientes por nome ou e-mail. Use quando o usuário mencionar um paciente específico.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name_query": {
+          "type": "string",
+          "description": "Nome ou parte do nome do paciente"
+        }
+      },
+      "required": [
+        "name_query"
+      ]
+    }
+  },
+  {
+    "name": "list_patients",
+    "description": "Lista os pacientes recentes. Use para pedidos como meus pacientes ou quem eu atendo.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Quantidade de pacientes a retornar (padrão 5, máximo 20)"
+        }
+      }
+    }
+  },
+  {
+    "name": "get_patient_details",
+    "description": "Retorna o perfil completo de um paciente, incluindo dados pessoais, contato, financeiro e risco.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente no sistema"
+        }
+      },
+      "required": [
+        "patientId"
+      ]
+    }
+  },
+  {
+    "name": "report_all_patients",
+    "description": "Recupera dados de todos os pacientes para uma visão geral completa."
+  },
+  {
+    "name": "search_clinical_history",
+    "description": "Busca no prontuário e nas anotações clínicas do paciente. Use para evolução do paciente, última sessão ou histórico de ansiedade.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente"
+        },
+        "keywords": {
+          "type": "string",
+          "description": "Termos-chave para busca, por exemplo: ansiedade, sono, medicamento"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Número de notas a retornar (padrão 5)"
+        }
+      },
+      "required": [
+        "patientId"
+      ]
+    }
+  },
+  {
+    "name": "generate_patient_insights",
+    "description": "Gera análise de IA sobre a evolução do paciente. Use para progresso do paciente ou resumo clínico.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente"
+        },
+        "focusArea": {
+          "type": "string",
+          "description": "Área de foco: geral, ansiedade, sono, medicação ou progresso"
+        }
+      },
+      "required": [
+        "patientId"
+      ]
+    }
+  },
+  {
+    "name": "suggest_treatment_approach",
+    "description": "Sugere abordagens terapêuticas baseadas em evidências. Apenas sugestões; a decisão final é do terapeuta.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "Condição ou diagnóstico, por exemplo: TAG, Depressão, TEPT"
+        },
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente para contexto"
+        },
+        "approach": {
+          "type": "string",
+          "description": "Abordagem preferida: TCC, Psicodinâmica, Humanista ou Geral"
+        }
+      },
+      "required": [
+        "condition"
+      ]
+    }
+  },
+  {
+    "name": "detect_risk_patterns",
+    "description": "Detecta pacientes em risco ou que precisam de atenção. Use para quem precisa de atenção ou pacientes em risco.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "riskType": {
+          "type": "string",
+          "description": "Tipo de risco: inactivity, no_show, high_risk ou all"
+        },
+        "daysThreshold": {
+          "type": "integer",
+          "description": "Dias de inatividade considerados (padrão 30)"
+        }
+      }
+    }
+  },
+  {
+    "name": "get_calendar",
+    "description": "Visualiza a agenda de compromissos. Use para minha agenda hoje ou próxima sessão.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "description": "Data inicial no formato YYYY-MM-DD"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "Data final no formato YYYY-MM-DD"
+        }
+      },
+      "required": [
+        "startDate",
+        "endDate"
+      ]
+    }
+  },
+  {
+    "name": "create_appointment",
+    "description": "Agenda uma nova sessão ou consulta. Sempre confirme os dados com o usuário antes de chamar esta ferramenta.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente"
+        },
+        "datetime": {
+          "type": "string",
+          "description": "Data e hora no formato ISO 8601, por exemplo: 2024-10-05T14:00:00"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Duração em minutos"
+        },
+        "type": {
+          "type": "string",
+          "description": "Tipo da consulta: presencial, online ou block"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Observações sobre a consulta"
+        }
+      },
+      "required": [
+        "datetime"
+      ]
+    }
+  },
+  {
+    "name": "reschedule_appointment",
+    "description": "Remarca uma consulta existente para nova data e hora. Confirme com o usuário antes de executar.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "appointmentId": {
+          "type": "string",
+          "description": "ID da consulta a remarcar"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente para confirmação"
+        },
+        "newDatetime": {
+          "type": "string",
+          "description": "Nova data e hora no formato ISO 8601"
+        },
+        "newDuration": {
+          "type": "integer",
+          "description": "Nova duração em minutos"
+        },
+        "notifyPatient": {
+          "type": "boolean",
+          "description": "Notificar paciente via WhatsApp, padrão true"
+        }
+      },
+      "required": [
+        "appointmentId",
+        "newDatetime"
+      ]
+    }
+  },
+  {
+    "name": "cancel_appointment",
+    "description": "Cancela uma consulta agendada. Sempre confirme com o usuário antes de cancelar.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "appointmentId": {
+          "type": "string",
+          "description": "ID da consulta a cancelar"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente para confirmação"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Motivo do cancelamento"
+        },
+        "notifyPatient": {
+          "type": "boolean",
+          "description": "Notificar paciente via WhatsApp, padrão true"
+        }
+      },
+      "required": [
+        "appointmentId"
+      ]
+    }
+  },
+  {
+    "name": "find_available_slots",
+    "description": "Encontra horários livres na agenda. Use para pedidos como quando tenho vaga ou encaixe o paciente.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "description": "Data inicial no formato YYYY-MM-DD"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "Data final no formato YYYY-MM-DD"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Duração desejada em minutos, padrão 50"
+        },
+        "preferredTime": {
+          "type": "string",
+          "description": "Preferência: morning, afternoon ou evening"
+        }
+      },
+      "required": [
+        "startDate"
+      ]
+    }
+  },
+  {
+    "name": "create_patient",
+    "description": "Cria um novo paciente no sistema. Pergunte ao usuário os dados obrigatórios se faltarem.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nome completo do paciente"
+        },
+        "email": {
+          "type": "string",
+          "description": "E-mail do paciente"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Telefone do paciente"
+        },
+        "cpf": {
+          "type": "string",
+          "description": "CPF do paciente"
+        },
+        "diagnosis": {
+          "type": "string",
+          "description": "Diagnóstico inicial"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Observações adicionais"
+        },
+        "birth_date": {
+          "type": "string",
+          "description": "Data de nascimento no formato YYYY-MM-DD"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "update_patient_info",
+    "description": "Atualiza informações de um paciente existente. Confirme as mudanças antes de executar.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente a atualizar"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente para confirmação"
+        },
+        "name": {
+          "type": "string",
+          "description": "Novo nome completo"
+        },
+        "email": {
+          "type": "string",
+          "description": "Novo e-mail"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Novo telefone"
+        },
+        "diagnosis": {
+          "type": "string",
+          "description": "Novo diagnóstico"
+        },
+        "status": {
+          "type": "string",
+          "description": "Novo status: active, pending ou inactive"
+        }
+      },
+      "required": [
+        "patientId"
+      ]
+    }
+  },
+  {
+    "name": "add_patient_medication",
+    "description": "Adiciona ou atualiza medicação no prontuário do paciente. Use para casos como Jefferson começou Sertralina.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente"
+        },
+        "medicationName": {
+          "type": "string",
+          "description": "Nome do medicamento"
+        },
+        "dosage": {
+          "type": "string",
+          "description": "Dosagem, por exemplo: 50mg"
+        },
+        "frequency": {
+          "type": "string",
+          "description": "Frequência, por exemplo: 1x ao dia"
+        },
+        "action": {
+          "type": "string",
+          "description": "Ação: add, remove ou update"
+        }
+      },
+      "required": [
+        "patientId",
+        "medicationName"
+      ]
+    }
+  },
+  {
+    "name": "create_session_note",
+    "description": "Cria nota de sessão no prontuário. Use para pedidos como anote isso, registre que ou adicionar ao prontuário.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Conteúdo da anotação clínica"
+        },
+        "appointmentId": {
+          "type": "string",
+          "description": "ID da consulta relacionada"
+        }
+      },
+      "required": [
+        "patientId",
+        "notes"
+      ]
+    }
+  },
+  {
+    "name": "send_whatsapp_message",
+    "description": "Envia mensagem de WhatsApp para paciente. Sempre confirme o conteúdo com o usuário antes de enviar.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente"
+        },
+        "patientPhone": {
+          "type": "string",
+          "description": "Telefone no formato 5511999998888"
+        },
+        "message": {
+          "type": "string",
+          "description": "Conteúdo da mensagem a enviar"
+        }
+      },
+      "required": [
+        "patientId",
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "read_whatsapp_conversations",
+    "description": "Lista conversas recentes de WhatsApp. Use para quem me mandou mensagem ou conversas recentes.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientName": {
+          "type": "string",
+          "description": "Filtrar por nome do paciente"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Limite de conversas a retornar, padrão 5"
+        }
+      }
+    }
+  },
+  {
+    "name": "send_email",
+    "description": "Envia e-mail real via Gmail. Sempre confirme o conteúdo com o usuário antes de enviar.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente relacionado"
+        },
+        "to": {
+          "type": "string",
+          "description": "E-mail do destinatário"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Assunto do e-mail"
+        },
+        "body": {
+          "type": "string",
+          "description": "Corpo do e-mail"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ]
+    }
+  },
+  {
+    "name": "draft_email",
+    "description": "Cria rascunho de e-mail sem enviar. Útil para pedidos como prepare um e-mail ou rascunho para Maria.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string",
+          "description": "E-mail do destinatário"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Assunto do e-mail"
+        },
+        "body": {
+          "type": "string",
+          "description": "Corpo do e-mail"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ]
+    }
+  },
+  {
+    "name": "get_financial_metrics",
+    "description": "Resumo financeiro do mês, incluindo receita, despesas e lucro. Use para faturamento ou caixa."
+  },
+  {
+    "name": "list_transactions",
+    "description": "Lista as últimas transações financeiras. Use para últimos pagamentos ou gastos recentes.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Quantidade de transações a retornar"
+        }
+      }
+    }
+  },
+  {
+    "name": "create_transaction",
+    "description": "Registra nova transação financeira, receita ou despesa. Use para pedidos como recebi 200 do Jefferson ou paguei conta.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Descrição da transação"
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Valor da transação"
+        },
+        "type": {
+          "type": "string",
+          "description": "Tipo: income ou expense"
+        },
+        "category": {
+          "type": "string",
+          "description": "Categoria, por exemplo: Consulta, Aluguel, Material"
+        },
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente relacionado"
+        },
+        "date": {
+          "type": "string",
+          "description": "Data no formato YYYY-MM-DD, padrão hoje"
+        }
+      },
+      "required": [
+        "description",
+        "amount",
+        "type"
+      ]
+    }
+  },
+  {
+    "name": "generate_financial_report",
+    "description": "Gera relatório financeiro por período. Use para relatório do mês ou balanço anual.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "description": "Data inicial no formato YYYY-MM-DD"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "Data final no formato YYYY-MM-DD"
+        },
+        "type": {
+          "type": "string",
+          "description": "Filtro: income, expense ou all"
+        },
+        "category": {
+          "type": "string",
+          "description": "Filtrar por categoria específica"
+        }
+      },
+      "required": [
+        "startDate"
+      ]
+    }
+  },
+  {
+    "name": "send_payment_reminder",
+    "description": "Envia lembrete de pagamento ao paciente. Use para pedidos como cobre o Jefferson.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente"
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Valor devido"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Data de vencimento"
+        }
+      },
+      "required": [
+        "patientId",
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "draft_invoice",
+    "description": "Gera widget de cobrança e fatura; não envia, apenas prepara para revisão.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente"
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Valor da cobrança"
+        },
+        "description": {
+          "type": "string",
+          "description": "Descrição da cobrança"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Data de vencimento"
+        }
+      },
+      "required": [
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "generate_document",
+    "description": "Gera documentos oficiais como atestados e laudos preenchidos com preview visual.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Tipo: Atestado, Declaracao, Laudo ou Encaminhamento"
+        },
+        "title": {
+          "type": "string",
+          "description": "Título do documento"
+        },
+        "content_html": {
+          "type": "string",
+          "description": "Conteúdo do documento em HTML"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Nome do paciente"
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "content_html",
+        "patientName"
+      ]
+    }
+  },
+  {
+    "name": "draft_official_document",
+    "description": "Gera minuta de documento oficial como laudo ou parecer com base em normas. Revisão obrigatória pelo profissional.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Tipo: laudo, parecer, atestado, declaracao ou relatorio"
+        },
+        "patientId": {
+          "type": "string",
+          "description": "ID do paciente"
+        },
+        "demand": {
+          "type": "string",
+          "description": "Motivo ou demanda do documento"
+        },
+        "recipients": {
+          "type": "string",
+          "description": "Destinatários do documento"
+        }
+      },
+      "required": [
+        "type",
+        "patientId",
+        "demand"
+      ]
+    }
+  },
+  {
+    "name": "search_medical_articles",
+    "description": "Busca artigos científicos no PubMed. Use para pedidos como pesquise sobre TCC para insônia.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Termos da busca científica"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Número de artigos a retornar, padrão 3"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "search_cid10",
+    "description": "Busca códigos CID-10. Use para perguntas como qual o CID de ansiedade ou código F41.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Nome da doença ou código CID a buscar"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "get_medication_info",
+    "description": "Retorna informações sobre medicamentos, incluindo bula e interações. Use para efeitos da Sertralina.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "medicationName": {
+          "type": "string",
+          "description": "Nome do medicamento a pesquisar"
+        },
+        "queryType": {
+          "type": "string",
+          "description": "Tipo de consulta: general, interactions, dosage ou side_effects"
+        }
+      },
+      "required": [
+        "medicationName"
+      ]
+    }
+  },
+  {
+    "name": "get_latest_scientific_updates",
+    "description": "Retorna as últimas atualizações científicas curadas. Use para novidades de hoje ou atualizações da neurociência.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Quantidade de itens a retornar, padrão 5"
+        },
+        "source": {
+          "type": "string",
+          "description": "Filtro de fonte: all, github ou arxiv"
+        }
+      }
+    }
+  },
+  {
+    "name": "search_normative_docs",
+    "description": "Busca em leis e normas do CFP e Código de Ética. Use para perguntas como o que a resolução diz sobre laudos.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Dúvida ou termo jurídico e normativo a buscar"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Número de trechos relevantes a retornar, padrão 3"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  }
+]

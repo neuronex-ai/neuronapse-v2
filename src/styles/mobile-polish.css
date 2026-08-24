@@ -1,0 +1,177 @@
+@import "./mobile-embedded.css";
+
+@media (max-width: 767px) {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    overscroll-behavior: none;
+  }
+
+  body:has(.nn-mobile-shell) {
+    overflow: hidden;
+  }
+
+  .nn-mobile-shell {
+    isolation: isolate;
+    height: 100dvh;
+    min-height: 100dvh;
+    max-width: 100vw;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% -12%, hsl(var(--foreground) / 0.035), transparent 34%),
+      hsl(var(--background));
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .nn-mobile-shell *,
+  .nn-mobile-shell *::before,
+  .nn-mobile-shell *::after {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nn-mobile-shell main {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .nn-mobile-shell .mobile-scroll-owner {
+    overscroll-behavior-y: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nn-mobile-shell .mobile-scroll-owner::-webkit-scrollbar,
+  .nn-mobile-shell .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nn-mobile-shell button,
+  .nn-mobile-shell a,
+  .nn-mobile-shell [role="button"] {
+    touch-action: manipulation;
+  }
+
+  .nn-mobile-shell input,
+  .nn-mobile-shell textarea,
+  .nn-mobile-shell select {
+    font-size: 16px;
+  }
+
+  .nn-mobile-shell .mobile-retina-texture {
+    background:
+      linear-gradient(145deg, hsl(var(--foreground) / 0.018), transparent 44%),
+      radial-gradient(circle at 50% -12%, hsl(var(--foreground) / 0.028), transparent 38%);
+    opacity: 0.7;
+    mix-blend-mode: soft-light;
+  }
+
+  .nn-mobile-shell .mobile-surface-texture {
+    background:
+      linear-gradient(145deg, hsl(var(--foreground) / 0.018), transparent 46%),
+      hsl(var(--background));
+  }
+
+  .nn-mobile-shell .backdrop-blur-3xl,
+  .nn-mobile-shell .backdrop-blur-2xl {
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+  }
+
+  .nn-mobile-shell [class~="pt-[5.75rem]"] {
+    padding-top: 0 !important;
+  }
+
+  .nn-mobile-shell .pb-32,
+  .nn-mobile-shell .pb-44 {
+    padding-bottom: calc(6.8rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .nn-mobile-shell > nav {
+    bottom: calc(0.42rem + env(safe-area-inset-bottom)) !important;
+    width: calc(100% - 1.15rem) !important;
+    max-width: 410px !important;
+  }
+
+  .nn-mobile-shell > nav > div {
+    border-radius: 30px !important;
+    box-shadow: 0 24px 60px -34px rgb(0 0 0 / 0.78), inset 0 1px 0 rgb(255 255 255 / 0.11) !important;
+  }
+
+  .nn-mobile-shell > nav a[class*="flex-col"],
+  .nn-mobile-shell > nav button[class*="flex-col"] {
+    width: 3.25rem !important;
+    height: 3rem !important;
+    border-radius: 18px !important;
+  }
+
+  .nn-mobile-shell > nav [class~="w-[58px]"] {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .nn-mobile-shell > nav [class~="-mt-9"] {
+    margin-top: -1.45rem !important;
+  }
+
+  .nn-mobile-shell [data-mobile-compact-card="true"] {
+    border-radius: 22px;
+    padding: 1rem;
+  }
+
+  .nn-mobile-shell [data-mobile-page-header="true"] {
+    padding-top: 0.35rem;
+    padding-bottom: 1rem;
+  }
+
+  .nn-mobile-shell [data-mobile-page-header="true"] h1 {
+    font-size: clamp(1.65rem, 8vw, 2rem);
+    line-height: 0.95;
+  }
+
+  .nn-mobile-shell [data-mobile-sticky-actions="true"] {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .nn-mobile-shell .animate-fade-in {
+    animation-duration: 0.2s !important;
+  }
+
+  [data-radix-dialog-content],
+  [role="dialog"][data-state] {
+    max-height: calc(100dvh - 1rem);
+    overscroll-behavior-y: contain;
+  }
+
+  [data-vaul-drawer] {
+    max-height: calc(100dvh - env(safe-area-inset-top) - 0.5rem);
+  }
+}
+
+@media (max-width: 374px) {
+  .nn-mobile-shell > nav {
+    width: calc(100% - 0.5rem) !important;
+  }
+
+  .nn-mobile-shell [data-mobile-page-header="true"] h1 {
+    font-size: 1.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nn-mobile-shell *,
+  .nn-mobile-shell *::before,
+  .nn-mobile-shell *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .nn-mobile-shell .animate-spin {
+    animation-duration: 0.85s !important;
+    animation-iteration-count: infinite !important;
+  }
+}

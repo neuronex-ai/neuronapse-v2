@@ -1,0 +1,461 @@
+project_id = "neurobackupofc"
+
+[functions.scientific-updater]
+enabled = true
+verify_jwt = true
+import_map = "./functions/scientific-updater/deno.json"
+entrypoint = "./functions/scientific-updater/index.ts"
+
+[functions.ingest-normative]
+enabled = true
+verify_jwt = true
+import_map = "./functions/ingest-normative/deno.json"
+entrypoint = "./functions/ingest-normative/index.ts"
+
+[functions.sync-cfp-norms]
+enabled = true
+verify_jwt = true
+import_map = "./functions/sync-cfp-norms/deno.json"
+entrypoint = "./functions/sync-cfp-norms/index.ts"
+
+# ─── NEUROFINANCE / ASAAS EDGE FUNCTIONS ─────────────────────
+
+[functions.asaas-webhook]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/asaas-webhook/index.ts"
+
+[functions.asaas-notifications-webhook]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/asaas-notifications-webhook/index.ts"
+
+[functions.asaas-connect-onboarding]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-connect-onboarding/index.ts"
+
+[functions.asaas-account-sync]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-account-sync/index.ts"
+
+[functions.asaas-account-update]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-account-update/index.ts"
+
+[functions.asaas-upload-file]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-upload-file/index.ts"
+
+[functions.asaas-submit-kyc]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-submit-kyc/index.ts"
+
+[functions.asaas-create-payment]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-create-payment/index.ts"
+
+[functions.asaas-payment-link]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-payment-link/index.ts"
+
+[functions.asaas-checkout-branding]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-checkout-branding/index.ts"
+
+[functions.asaas-refund]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-refund/index.ts"
+
+[functions.asaas-payout]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-payout/index.ts"
+
+[functions.asaas-pix-out]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-pix-out/index.ts"
+
+[functions.asaas-pix]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-pix/index.ts"
+
+[functions.asaas-pix-payment]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-pix-payment/index.ts"
+
+[functions.asaas-pix-static-qrcode]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-pix-static-qrcode/index.ts"
+
+[functions.asaas-bill-payment]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-bill-payment/index.ts"
+
+[functions.asaas-invoices]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-invoices/index.ts"
+
+[functions.asaas-balance-details]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-balance-details/index.ts"
+
+[functions.asaas-financial-sync]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/asaas-financial-sync/index.ts"
+
+[functions.asaas-payment-actions]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/asaas-payment-actions/index.ts"
+
+[functions.financial-pin]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/financial-pin/index.ts"
+
+[functions.neurofinance-post-onboarding]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/neurofinance-post-onboarding/index.ts"
+
+# ─── COMMUNICATION / REPORTS ──────────────────────────────────
+
+# ─── AUTH EMAIL TEMPLATES ─────────────────────────────────────
+
+[auth.email.template.confirmation]
+subject = "Confirme seu e-mail na NeuroNex AI"
+content_path = "./supabase/templates/confirm-signup.html"
+
+[auth.email.template.magic_link]
+subject = "{{ .Token }} é seu código da NeuroNex AI"
+content_path = "./supabase/templates/magic-link.html"
+
+# ─── SYNAPSE ──────────────────────────────────────────────────
+
+[functions.gemini-text-chat]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/gemini-text-chat/index.ts"
+
+[functions.synapse-text-fallback]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/synapse-text-fallback/index.ts"
+
+[functions.synapse-text-gateway]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/synapse-text-gateway/index.ts"
+
+[functions.synapse-voice-agent-session]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/synapse-voice-agent-session/index.ts"
+
+[functions.synapse-voice-azure-tts]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/synapse-voice-azure-tts/index.ts"
+
+[functions.synapse-voice-gateway]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/synapse-voice-gateway/index.ts"
+
+[functions.synapse-voice-tool]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/synapse-voice-tool/index.ts"
+
+[functions.synapse-whatsapp-in]
+enabled = true
+verify_jwt = false
+import_map = "./functions/synapse-whatsapp-in/deno.json"
+entrypoint = "./functions/synapse-whatsapp-in/index.ts"
+
+[functions.neurozap-evolution]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/neurozap-evolution/index.ts"
+
+[functions.whatsapp-send]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/whatsapp-send/index.ts"
+
+[functions.n8n-agent-gateway]
+enabled = true
+verify_jwt = false
+import_map = "./functions/n8n-agent-gateway/deno.json"
+entrypoint = "./functions/n8n-agent-gateway/index.ts"
+
+[functions.signup-email-status]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/signup-email-status/index.ts"
+
+[functions.signup-start]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/signup-start/index.ts"
+
+[functions.signup-verify]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/signup-verify/index.ts"
+
+[functions.signup-complete]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/signup-complete/index.ts"
+
+[functions.create-checkout-session]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/create-checkout-session/index.ts"
+
+[functions.get-current-entitlement]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/get-current-entitlement/index.ts"
+
+[functions.create-patient-portal-invite]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/create-patient-portal-invite/index.ts"
+
+[functions.patient-portal-invite-preview]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/patient-portal-invite-preview/index.ts"
+
+[functions.patient-portal-auth]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/patient-portal-auth/index.ts"
+
+[functions.patient-portal-activate]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/patient-portal-activate/index.ts"
+
+[functions.patient-portal-current]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/patient-portal-current/index.ts"
+
+[functions.patient-portal-appointment-action]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/patient-portal-appointment-action/index.ts"
+
+[functions.public-anamnesis]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/public-anamnesis/index.ts"
+
+[functions.public-appointment-notification]
+enabled = false
+verify_jwt = false
+entrypoint = "./functions/public-appointment-notification/index.ts"
+
+[functions.google-calendar-poll]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/google-calendar-poll/index.ts"
+
+[functions.get-appointment-by-token]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/get-appointment-by-token/index.ts"
+
+[functions.confirm-appointment]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/confirm-appointment/index.ts"
+
+[functions.get-public-availability]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/get-public-availability/index.ts"
+
+[functions.process-public-appointment]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/process-public-appointment/index.ts"
+
+[functions.send-appointment-reminder]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/send-appointment-reminder/index.ts"
+
+[functions.prepare-appointment-whatsapp-invite]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/prepare-appointment-whatsapp-invite/index.ts"
+
+[functions.review-appointment-reschedule]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/review-appointment-reschedule/index.ts"
+
+[functions.process-appointment-communications]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/process-appointment-communications/index.ts"
+
+[functions.manage-package-lifecycle]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/manage-package-lifecycle/index.ts"
+
+[functions.verify-checkout-session]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/verify-checkout-session/index.ts"
+
+[functions.continue-free-plan]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/continue-free-plan/index.ts"
+
+[functions.subscription-maintenance]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/subscription-maintenance/index.ts"
+
+[functions.address-autocomplete]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/address-autocomplete/index.ts"
+
+[functions.address-validate]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/address-validate/index.ts"
+
+[functions.initial-settings-save]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/initial-settings-save/index.ts"
+
+# ─── DOCUMENT STORAGE / CLOUDFLARE R2 ─────────────────────────
+
+[functions.notion-auth-init]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/notion-auth-init/index.ts"
+
+[functions.notion-auth-callback]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/notion-auth-callback/index.ts"
+
+[functions.notion-pages]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/notion-pages/index.ts"
+
+[functions.notion-webhook]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/notion-webhook/index.ts"
+
+[functions.r2-create-upload-url]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/r2-create-upload-url/index.ts"
+
+# Additional authenticated Edge Functions hardened during the R2/security audit.
+
+[functions.send-document-email]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/send-document-email/index.ts"
+
+[functions.send-document-email-safe]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/send-document-email-safe/index.ts"
+
+[functions.send-google-invite]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/send-google-invite/index.ts"
+
+[functions.send-reminder-email]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/send-reminder-email/index.ts"
+
+[functions.send-session-invite]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/send-session-invite/index.ts"
+
+[functions.ensure-teleconsultation-invite]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/ensure-teleconsultation-invite/index.ts"
+
+[functions.redeem-teleconsultation-invite]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/redeem-teleconsultation-invite/index.ts"
+
+[functions.get-session-join-info]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/get-session-join-info/index.ts"
+
+[functions.generate-jitsi-token]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/generate-jitsi-token/index.ts"
+
+[functions.generate-summary]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/generate-summary/index.ts"
+
+[functions.neuroscan-extract]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/neuroscan-extract/index.ts"
+
+[functions.check-invoice-status]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/check-invoice-status/index.ts"
+
+[functions.delete-user-account]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/delete-user-account/index.ts"
+
+[functions.google-drive-files]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/google-drive-files/index.ts"
+
+[functions.google-suite-action]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/google-suite-action/index.ts"

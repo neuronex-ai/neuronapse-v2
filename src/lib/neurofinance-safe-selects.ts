@@ -1,0 +1,204 @@
+import type { Tables } from "@/integrations/supabase/database.types";
+
+export type FinancialAccountSafeRow = Tables<"financial_accounts_safe_v">;
+export type NbPaymentSafeRow = Tables<"nb_payments_safe_v">;
+export type NbPayoutSafeRow = Tables<"nb_payouts_safe_v">;
+
+export const FINANCIAL_ACCOUNTS_READ_TABLE = "financial_accounts_safe_v";
+export const NB_PAYMENTS_READ_TABLE = "nb_payments_safe_v";
+export const NB_PAYOUTS_READ_TABLE = "nb_payouts_safe_v";
+
+export const FINANCIAL_ACCOUNT_SAFE_SELECT = [
+  "id",
+  "user_id",
+  "status",
+  "ui_status",
+  "provider",
+  "onboarding_started_at",
+  "onboarding_completed_at",
+  "charges_enabled",
+  "payouts_enabled",
+  "details_submitted",
+  "default_currency",
+  "bank_account_last4",
+  "bank_name",
+  "pix_enabled",
+  "card_enabled",
+  "platform_fee_percent",
+  "platform_fee_fixed",
+  "created_at",
+  "updated_at",
+  "asaas_account_id",
+  "asaas_wallet_id",
+  "requirements",
+  "account_status",
+  "asaas_onboarding_url",
+  "asaas_environment",
+  "last_asaas_event_type",
+  "last_asaas_event_at",
+  "last_balance_sync_at",
+  "last_sync_error",
+  "holder_name",
+  "cpf_cnpj",
+  "birth_date",
+  "mobile_phone",
+  "pep_status",
+  "address_street",
+  "address_number",
+  "address_complement",
+  "address_neighborhood",
+  "address_city",
+  "address_state",
+  "address_postal_code",
+  "company_type",
+  "income_value",
+  "business_url",
+  "business_description",
+  "business_mcc",
+  "bank_code",
+  "bank_agency",
+  "bank_account_type",
+  "bank_holder_name",
+  "bank_holder_cpf_cnpj",
+  "tos_accepted_at",
+  "pix_key_consent_at",
+  "neuronex_terms_version",
+  "asaas_terms_reference",
+  "asaas_privacy_policy_reference",
+].join(",");
+
+export const NB_PAYMENTS_SAFE_SELECT = [
+  "id",
+  "user_id",
+  "patient_id",
+  "appointment_id",
+  "financial_account_id",
+  "provider",
+  "payment_method_type",
+  "status",
+  "normalized_status",
+  "funds_status",
+  "gross_amount",
+  "platform_fee_amount",
+  "estimated_fee_amount",
+  "actual_fee_amount",
+  "net_amount",
+  "currency",
+  "description",
+  "pix_qr_code",
+  "pix_copy_paste",
+  "checkout_url",
+  "boleto_url",
+  "boleto_pdf",
+  "invoice_url",
+  "bank_slip_url",
+  "receipt_url",
+  "refund_amount",
+  "paid_at",
+  "expires_at",
+  "confirmed_at",
+  "available_at",
+  "estimated_credit_at",
+  "installments",
+  "channel",
+  "dispute_status",
+  "dispute_reason",
+  "dispute_amount",
+  "cancelable",
+  "anticipable",
+  "anticipated",
+  "provider_due_date",
+  "nfse_provider",
+  "nfse_reference",
+  "nfse_status",
+  "nfse_number",
+  "nfse_verification_code",
+  "nfse_pdf_url",
+  "nfse_xml_url",
+  "nfse_status_description",
+  "nfse_authorized_at",
+  "nfse_synced_at",
+  "nfse_error_message",
+  "created_at",
+  "updated_at",
+].join(",");
+
+export const NB_PAYOUTS_SAFE_SELECT = [
+  "id",
+  "user_id",
+  "financial_account_id",
+  "provider",
+  "amount",
+  "currency",
+  "status",
+  "operation_type",
+  "fee_amount",
+  "destination_type",
+  "destination_summary",
+  "receipt_url",
+  "error_code",
+  "error_message",
+  "requested_at",
+  "processed_at",
+  "completed_at",
+  "created_at",
+  "updated_at",
+].join(",");
+
+export const FORBIDDEN_FINANCIAL_ACCOUNT_FIELDS = [
+  "metadata",
+  "onboarding_payload",
+  "bank_account",
+  "bank_account_digit",
+  "document_front_id",
+  "document_back_id",
+];
+
+export const FORBIDDEN_NB_PAYMENT_FIELDS = [
+  "metadata",
+  "provider_payload",
+  "provider_payment_id",
+  "fee_rule_id",
+  "reconciliation_status",
+  "reconciled_at",
+  "dispute_id",
+  "nfse_payload",
+];
+
+export const FORBIDDEN_NB_PAYOUT_FIELDS = [
+  "metadata",
+  "provider_payload",
+  "destination_payload",
+  "provider_payout_id",
+  "pix_key",
+  "reconciliation_status",
+  "reconciled_at",
+];
+
+export function normalizeFinancialAccountRow<T extends Record<string, any> | null>(row: T): T {
+  if (!row) return row;
+  return {
+    ...row,
+    ui_status: row.ui_status || row.status || null,
+    account_status: row.account_status || row.requirements || null,
+  } as T;
+}
+
+export function normalizeNbPaymentRow<T extends Record<string, any>>(row: T): T {
+  return {
+    ...row,
+    invoice_url: row.invoice_url || row.checkout_url || row.nfse_pdf_url || null,
+    bank_slip_url: row.bank_slip_url || row.boleto_url || row.boleto_pdf || null,
+    receipt_url: row.receipt_url || null,
+    cancelable: row.cancelable ?? ["pending", "overdue", "created"].includes(String(row.status || "")),
+  } as T;
+}
+
+export function normalizeNbPayoutRow<T extends Record<string, any>>(row: T): T {
+  return {
+    ...row,
+    receipt_url: row.receipt_url || null,
+    error_code: row.error_code || null,
+    error_message: row.error_message || null,
+  } as T;
+}

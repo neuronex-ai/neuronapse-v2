@@ -1,0 +1,6 @@
+[mcp_servers.context7]
+type = "http"
+url = "https://mcp.context7.com/mcp"
+
+# Read the credential from the developer's environment. Never commit its value.
+env_http_headers = { CONTEXT7_API_KEY = "CONTEXT7_API_KEY" }

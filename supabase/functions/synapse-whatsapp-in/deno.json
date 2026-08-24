@@ -1,0 +1,7 @@
+{
+    "functions": {
+        "synapse-whatsapp-in": {
+            "entrypoint": "index.ts"
+        }
+    }
+}

@@ -1,0 +1,87 @@
+import { Link } from "react-router-dom";
+import { Mail, MapPin, Phone, ArrowUpRight } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
+import { PUBLIC_CONTENT } from "@/content/public-content";
+
+export const Footer = () => {
+  const currentYear = new Date().getFullYear();
+  const { organization } = PUBLIC_CONTENT.site;
+  const phoneDigits = organization.telephone.replace(/\D/gu, "");
+  const phoneLabel = `+${phoneDigits.slice(0, 2)} (${phoneDigits.slice(2, 4)}) ${phoneDigits.slice(4, 9)}-${phoneDigits.slice(9)}`;
+  const addressLabel = `${organization.address.streetAddress}, ${organization.address.addressLocality} - ${organization.address.addressRegion}`;
+
+  const footerLinks = {
+    produto: [
+      { label: "Produto", path: "/produto" },
+      { label: "NeuroFinance", path: "/neurofinance" },
+      { label: "Gestão Financeira", path: "/gestao-financeira-para-psicologos" },
+      { label: "NeuroBox", path: "/neurobox" },
+      { label: "NeuroZap", path: "/neurozap-para-psicologos" },
+      { label: "Synapse AI", path: "/synapse" },
+    ],
+    operacao: [
+      { label: "Teleconsulta", path: "/teleconsulta-para-psicologos" },
+      { label: "Pacientes", path: "/pacientes-para-psicologos" },
+      { label: "Portal do Paciente", path: "/portal-do-paciente" },
+      { label: "Prontuário", path: "/prontuario-para-psicologos" },
+      { label: "Agenda", path: "/agenda-para-psicologos" },
+    ],
+    recursos: [
+      { label: "Download", path: "/download" },
+      { label: "Comparar sistemas", path: "/comparar" },
+      { label: "Segurança e ética", path: "/seguranca-e-etica" },
+      { label: "NeuroX", path: "/blog" },
+      { label: "Novidades", path: "/novidades" },
+      { label: "Central de Ajuda", path: "/ajuda" },
+      { label: "Contato", path: "/contato" },
+    ],
+    legal: [
+      { label: "Documentos legais", path: "/documentos-legais" },
+      { label: "Termos de Uso", path: "/termos-de-uso" },
+      { label: "Privacidade", path: "/politica-de-privacidade" },
+      { label: "Cookies", path: "/configuracoes-de-cookies" },
+    ],
+  };
+
+  return (
+    <footer className="relative overflow-hidden bg-background pb-16 pt-32 font-sans">
+      <div className="absolute left-1/2 top-0 h-px w-full max-w-7xl -translate-x-1/2 bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+      <div className="container relative z-10">
+        <div className="mb-24 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-7 lg:gap-8">
+          <div className="space-y-8 lg:col-span-2">
+            <Link to="/" className="flex min-h-11 items-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Ir para a página inicial da NeuroNex">
+              <Logo className="h-8 w-8" />
+              <span className="ml-3 text-sm font-black uppercase tracking-[0.4em]">NeuroNex</span>
+            </Link>
+            <p className="max-w-xs text-sm leading-relaxed text-muted-foreground/70">A NeuroNex conecta agenda, atendimento, prontuário, pacientes, cobranças e IA em uma única operação.</p>
+          </div>
+
+          {[{ title: "Produto", links: footerLinks.produto }, { title: "Operação", links: footerLinks.operacao }, { title: "Recursos", links: footerLinks.recursos }, { title: "Jurídico", links: footerLinks.legal }].map((section) => (
+            <div key={section.title} className="space-y-6 lg:col-span-1">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">{section.title}</h4>
+              <ul className="space-y-4">
+                {section.links.map((link) => (
+                  <li key={link.path}><Link to={link.path} className="group inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground">{link.label}<ArrowUpRight className="ml-1 h-3 w-3 opacity-0 transition group-hover:opacity-100" /></Link></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          <div className="space-y-6 lg:col-span-1">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">Contato</h4>
+            <div className="space-y-4 text-sm text-muted-foreground">
+              <a href={`mailto:${organization.email}`} className="flex items-center gap-3 hover:text-foreground"><Mail size={14} /> {organization.email}</a>
+              <a href={`tel:${organization.telephone}`} className="flex items-center gap-3 hover:text-foreground"><Phone size={14} /> {phoneLabel}</a>
+              <div className="flex items-start gap-3 leading-relaxed"><MapPin size={14} className="mt-1 shrink-0" /><span>{addressLabel}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-between gap-6 border-t border-border/50 pt-12 md:flex-row">
+          <p className="text-[11px] font-medium tracking-wider text-muted-foreground/50">{currentYear} © {organization.legalName}. TODOS OS DIREITOS RESERVADOS.</p>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/45">Brasil</span>
+        </div>
+      </div>
+    </footer>
+  );
+};

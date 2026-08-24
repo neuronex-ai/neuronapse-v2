@@ -1,0 +1,929 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { format, parseISO } from "date-fns";
+import { useSearchParams } from "react-router-dom";
+import {
+  Calendar,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  FileText,
+  Loader2,
+  MoreVertical,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { AdvancedFilterPopover as SharedAdvancedFilterPopover } from "@/components/financeiro/AdvancedFilterPopover";
+import { ManualChargeModal } from "@/components/financeiro/ManualChargeModal";
+import { NewInvoiceModal } from "@/components/financeiro/NewInvoiceModal";
+import { FinanceDataTable, FinanceStatusBadge } from "@/components/financeiro/shared/FinanceDataTable";
+import { FinanceOperationDialog, type FinanceOperationKind } from "@/components/financeiro/shared/FinanceOperationDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import {
+  type ChargeRow,
+  type ChargeScope,
+  type ChargeStatusFilter,
+  type ChargeTypeFilter,
+  mapInvoiceToChargeRow,
+  useChargesPage,
+} from "@/hooks/use-charges-page";
+import {
+  buildFinancialEntryIdempotencyKey,
+  toFinancialPaymentMethod,
+  useTransitionFinancialEntry,
+} from "@/hooks/use-financial-entries";
+import { useInvoiceActions, useInvoiceById } from "@/hooks/use-invoices";
+import { usePatients } from "@/hooks/use-patients";
+import {
+  financeCompetenceLabel,
+  financeTypeLabel,
+  FINANCE_AVAILABILITY_LABELS,
+  normalizeFinanceAvailability,
+  normalizeFinanceMethod,
+  normalizeFinanceOrigin,
+  normalizeFinanceStatus,
+  type FinancePresentationRow,
+} from "@/lib/finance-presentation";
+import { cn, formatCurrency } from "@/lib/utils";
+import { getUserFacingErrorMessage } from "@/lib/user-facing-error";
+
+interface ChargesWorkspaceProps {
+  scope: ChargeScope;
+  initialStatusFilters?: ChargeStatusFilter[];
+  initialTypeFilters?: ChargeTypeFilter[];
+  title?: string;
+}
+
+const sourceLabels: Record<string, string> = {
+  neurofinance: "NeuroFinance",
+  manual: "Manual",
+  appointment: "Agenda",
+  package: "Pacote",
+  convenio: "Convênio",
+  insurance: "Convênio",
+  subscription: "Recorrência",
+  recurring: "Recorrência",
+  single: "Cobrança avulsa",
+  installment: "Parcelamento",
+};
+
+const chargeOriginLabel = (charge: ChargeRow) =>
+  sourceLabels[charge.source] || sourceLabels[charge.origin] || "Gestão financeira";
+const isProviderManagedCharge = (charge: ChargeRow) =>
+  charge.scope === "neurofinance" || charge.source === "neurofinance";
+
+const filterStatusOptions: { id: ChargeStatusFilter; label: string }[] = [
+  { id: "planned", label: "Planejada" },
+  { id: "pending", label: "Pendente" },
+  { id: "overdue", label: "Vencida" },
+  { id: "paid", label: "Confirmada" },
+  { id: "cancelled", label: "Cancelada" },
+];
+
+const managementTypeOptions: { id: ChargeTypeFilter; label: string }[] = [
+  { id: "manual", label: "Manual" },
+  { id: "appointment", label: "Agenda" },
+  { id: "package", label: "Pacote" },
+  { id: "insurance", label: "Convênio" },
+  { id: "subscription", label: "Mensalidade" },
+];
+
+const neurofinanceTypeOptions: { id: ChargeTypeFilter; label: string }[] = [
+  { id: "single", label: "Avulsas" },
+  { id: "subscription", label: "Assinaturas" },
+  { id: "installment", label: "Parceladas" },
+];
+
+const dateLabel = (value?: string | null) => {
+  if (!value) return "Sem data";
+  try {
+    return format(parseISO(value), "dd/MM/yyyy");
+  } catch {
+    return value;
+  }
+};
+
+const getPaymentLink = (row: ChargeRow) => row.links.paymentUrl || row.links.pdfUrl || null;
+
+export function ChargesWorkspace({
+  scope,
+  initialStatusFilters = [],
+  initialTypeFilters = [],
+  title,
+}: ChargesWorkspaceProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { data: patients = [] } = usePatients();
+  const invoiceActions = useInvoiceActions();
+  const updateEntry = useTransitionFinancialEntry();
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(25);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dueStart, setDueStart] = useState("");
+  const [dueEnd, setDueEnd] = useState("");
+  const [receivedStart, setReceivedStart] = useState("");
+  const [receivedEnd, setReceivedEnd] = useState("");
+  const [statusFilters, setStatusFilters] = useState<ChargeStatusFilter[]>(initialStatusFilters);
+  const [typeFilters, setTypeFilters] = useState<ChargeTypeFilter[]>(initialTypeFilters);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedCharge, setSelectedCharge] = useState<ChargeRow | null>(null);
+  const [manualModalOpen, setManualModalOpen] = useState(false);
+  const [pendingDestructiveBatch, setPendingDestructiveBatch] = useState(false);
+  const [pendingSingleRemoval, setPendingSingleRemoval] = useState<ChargeRow | null>(null);
+  const [plannedOperation, setPlannedOperation] = useState<{ charge: ChargeRow; operation: FinanceOperationKind } | null>(null);
+  const requestedChargeId = scope === "neurofinance" ? searchParams.get("chargeId") : null;
+  const requestedInvoice = useInvoiceById(requestedChargeId);
+
+  const { data, isLoading, isFetching } = useChargesPage({
+    scope,
+    page,
+    pageSize,
+    search: searchQuery,
+    status: statusFilters,
+    type: typeFilters,
+    dueStart,
+    dueEnd,
+    receivedStart,
+    receivedEnd,
+  });
+
+  const charges = useMemo(() => data?.charges ?? [], [data?.charges]);
+  const total = data?.total || 0;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const totalAmount = charges.reduce((sum, charge) => sum + Number(charge.amount || 0), 0);
+  const activeFilters =
+    statusFilters.length + typeFilters.length + Number(!!dueStart) + Number(!!dueEnd) + Number(!!receivedStart) + Number(!!receivedEnd);
+  const allVisibleSelected = charges.length > 0 && charges.every((charge) => selectedIds.includes(charge.id));
+  const typeOptions = scope === "management" ? managementTypeOptions : neurofinanceTypeOptions;
+  const selectedRows = useMemo(() => charges.filter((charge) => selectedIds.includes(charge.id)), [charges, selectedIds]);
+
+  useEffect(() => {
+    if (!requestedChargeId) return;
+    const visibleCharge = charges.find(
+      (charge) => charge.neurofinancePaymentId === requestedChargeId,
+    );
+    if (visibleCharge) {
+      setSelectedCharge(visibleCharge);
+      return;
+    }
+    if (requestedInvoice.data) {
+      setSelectedCharge(mapInvoiceToChargeRow(requestedInvoice.data));
+    }
+  }, [charges, requestedChargeId, requestedInvoice.data]);
+
+  const closeChargeDetails = () => {
+    setSelectedCharge(null);
+    if (!requestedChargeId) return;
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("chargeId");
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const patientName = (row: ChargeRow) =>
+    row.patientName || patients.find((patient) => patient.id === row.patientId)?.name || "Sem paciente";
+
+  const chargeById = new Map(charges.map((charge) => [charge.id, charge]));
+  const presentationRows: FinancePresentationRow[] = charges.map((charge) => {
+    const status = normalizeFinanceStatus(charge.status, { dueDate: charge.dueDate });
+    const isNeuroFinance = isProviderManagedCharge(charge);
+    const availability = normalizeFinanceAvailability(charge.fundsStatus, {
+      isNeuroFinance,
+      status,
+      availableAt: charge.availableAt,
+    });
+    const actions: FinancePresentationRow["actions"] = ["open"];
+    if (charge.status === "paid") actions.push("receipt", isNeuroFinance ? "refund" : "reverse");
+    if (getPaymentLink(charge)) actions.push("copy_link");
+    if (isNeuroFinance) actions.push("sync");
+    if (["planned", "pending", "overdue"].includes(charge.status)) actions.push(isNeuroFinance ? "cancel" : "settle");
+    if (!isNeuroFinance && ["planned", "pending", "overdue"].includes(charge.status)) actions.push("cancel");
+
+    return {
+      id: charge.id,
+      sourceId: charge.financialEntryId || charge.neurofinancePaymentId,
+      kind: "charge",
+      direction: "income",
+      patientId: charge.patientId,
+      patientName: patientName(charge),
+      description: charge.description,
+      typeLabel: financeTypeLabel(charge.chargeType),
+      origin: normalizeFinanceOrigin(charge.origin, {
+        appointmentId: charge.appointmentId,
+        isNeuroFinance: isNeuroFinance && !charge.appointmentId,
+      }),
+      method: normalizeFinanceMethod(charge.paymentMethod),
+      competenceAt: charge.dueDate,
+      competenceLabel: financeCompetenceLabel(charge.dueDate),
+      status,
+      availability,
+      grossAmount: Math.abs(charge.amount),
+      feeAmount: charge.feeAmount,
+      netAmount: charge.netAmount,
+      netApplicability: isNeuroFinance ? (charge.netAmount == null ? "pending" : "known") : "not_applicable",
+      actions,
+      links: {
+        paymentUrl: charge.links.paymentUrl,
+        receiptUrl: charge.links.receiptUrl,
+        invoiceUrl: charge.links.invoiceUrl || charge.links.pdfUrl,
+        nfseUrl: charge.links.nfseUrl,
+        patientRoute: charge.links.patientRoute,
+        appointmentRoute: charge.links.appointmentRoute,
+        statementRoute: charge.links.statementRoute,
+      },
+      metadata: { chargeType: charge.chargeType },
+    };
+  });
+
+  const toggleStatus = (id: ChargeStatusFilter) => {
+    setPage(1);
+    setStatusFilters((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  };
+
+  const toggleType = (id: ChargeTypeFilter) => {
+    setPage(1);
+    setTypeFilters((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  };
+
+  const clearFilters = () => {
+    setDueStart("");
+    setDueEnd("");
+    setReceivedStart("");
+    setReceivedEnd("");
+    setStatusFilters([]);
+    setTypeFilters([]);
+    setPage(1);
+  };
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  };
+
+  const toggleAllVisible = () => {
+    if (allVisibleSelected) {
+      setSelectedIds((current) => current.filter((id) => !charges.some((charge) => charge.id === id)));
+      return;
+    }
+
+    setSelectedIds((current) => Array.from(new Set([...current, ...charges.map((charge) => charge.id)])));
+  };
+
+  const executeManagementStatus = async (row: ChargeRow, status: ChargeStatusFilter) => {
+    if (!row.financialEntryId) throw new Error("Esta cobrança não possui um lançamento gerencial válido.");
+    if (status === "pending") throw new Error("Lançamentos pagos não podem voltar para pendente. Use estorno.");
+    await updateEntry.mutateAsync(status === "paid"
+      ? {
+          id: row.financialEntryId,
+          action: "settle",
+          amount: row.amount,
+          effectiveAt: new Date(),
+          paymentMethod: toFinancialPaymentMethod(row.paymentMethod),
+          idempotencyKey: buildFinancialEntryIdempotencyKey(["charge-settle", row.financialEntryId]),
+        }
+      : {
+          id: row.financialEntryId,
+          action: "cancel",
+          reason: "Cancelamento solicitado na Gestão Financeira",
+          idempotencyKey: buildFinancialEntryIdempotencyKey(["charge-cancel", row.financialEntryId]),
+        });
+  };
+
+  const updateManagementStatus = async (row: ChargeRow, status: ChargeStatusFilter) => {
+    try {
+      await executeManagementStatus(row, status);
+      toast.success("Cobrança atualizada.");
+    } catch (error) {
+      console.error("Falha ao atualizar cobrança:", error);
+      toast.error(getUserFacingErrorMessage(error, "save"));
+    }
+  };
+
+  const executeNeurofinanceAction = async (row: ChargeRow, action: "sync" | "delete") => {
+    if (!row.neurofinancePaymentId) throw new Error("Esta cobrança não possui um vínculo bancário válido.");
+    return invoiceActions.runAction.mutateAsync({
+      id: row.neurofinancePaymentId,
+      action,
+      idempotencyKey: action === "delete"
+        ? buildFinancialEntryIdempotencyKey(["neurofinance-charge-delete", row.neurofinancePaymentId])
+        : undefined,
+    });
+  };
+
+  const runNeurofinanceAction = async (row: ChargeRow, action: "sync" | "delete") => {
+    try {
+      await executeNeurofinanceAction(row, action);
+      toast.success(action === "sync" ? "Cobrança sincronizada." : "Cobrança excluída.");
+    } catch (error) {
+      toast.error(getUserFacingErrorMessage(error, action === "sync" ? "load" : "delete"));
+    }
+  };
+
+  const runBatchAction = async (
+    action: "sync" | "copy" | "paid" | "cancel",
+    destructiveConfirmed = false,
+  ) => {
+    if (!selectedRows.length) {
+      toast.info("Selecione pelo menos uma cobrança.");
+      return;
+    }
+
+    if (action === "copy") {
+      const links = selectedRows.map(getPaymentLink).filter(Boolean);
+      if (!links.length) {
+        toast.info("As cobranças selecionadas não possuem links.");
+        return;
+      }
+      await navigator.clipboard.writeText(links.join("\n"));
+      toast.success("Links copiados.");
+      return;
+    }
+
+    if (action === "cancel" && !destructiveConfirmed) {
+      setPendingDestructiveBatch(true);
+      return;
+    }
+
+    if (scope === "management") {
+      const nextStatus: ChargeStatusFilter = action === "paid" ? "paid" : "cancelled";
+      if (nextStatus === "cancelled" && selectedRows.some((row) => ["paid", "cancelled"].includes(row.status))) {
+        toast.warning("A seleção contém cobranças que exigem estorno ou já estão encerradas.", {
+          description: "Revise a seleção. Nenhuma cobrança foi cancelada.",
+        });
+        return;
+      }
+      const results = await Promise.allSettled(
+        selectedRows.map((row) => executeManagementStatus(row, nextStatus)),
+      );
+      const succeededIds = results.flatMap((result, index) =>
+        result.status === "fulfilled" ? [selectedRows[index].id] : [],
+      );
+      const failures = results.filter((result): result is PromiseRejectedResult => result.status === "rejected");
+      setSelectedIds((current) => current.filter((id) => !succeededIds.includes(id)));
+      if (!failures.length) {
+        toast.success(`${succeededIds.length} cobrança${succeededIds.length === 1 ? " atualizada" : "s atualizadas"}.`);
+        return;
+      }
+      const description = getUserFacingErrorMessage(failures[0].reason, "save");
+      if (succeededIds.length) {
+        toast.warning("A ação foi concluída parcialmente.", {
+          description: `${succeededIds.length} concluída${succeededIds.length === 1 ? "" : "s"}; ${failures.length} precisa${failures.length === 1 ? "" : "m"} de atenção. ${description}`,
+        });
+      } else {
+        toast.error(description);
+      }
+      return;
+    }
+
+    const providerAction = action === "cancel" ? "delete" : action === "sync" ? "sync" : null;
+    if (!providerAction) return;
+
+    if (providerAction === "delete" && selectedRows.some((row) => !["pending", "overdue"].includes(row.status))) {
+      toast.warning("A seleção contém cobranças que não podem ser excluídas.", {
+        description: "Somente cobranças pendentes ou vencidas podem ser excluídas. Nenhuma alteração foi feita.",
+      });
+      return;
+    }
+
+    const results = await Promise.allSettled(
+      selectedRows.map((row) => executeNeurofinanceAction(row, providerAction)),
+    );
+    const succeededIds = results.flatMap((result, index) =>
+      result.status === "fulfilled" ? [selectedRows[index].id] : []
+    );
+    const failures = results.filter((result): result is PromiseRejectedResult => result.status === "rejected");
+
+    setSelectedIds((current) => current.filter((id) => !succeededIds.includes(id)));
+    if (!failures.length) {
+      toast.success(
+        providerAction === "sync"
+          ? `${succeededIds.length} cobrança${succeededIds.length === 1 ? " sincronizada" : "s sincronizadas"}.`
+          : `${succeededIds.length} cobrança${succeededIds.length === 1 ? " excluída" : "s excluídas"}.`,
+      );
+      return;
+    }
+
+    const firstFailure = failures[0].reason;
+    const description = getUserFacingErrorMessage(
+      firstFailure,
+      providerAction === "sync" ? "load" : "delete",
+    );
+    if (succeededIds.length) {
+      toast.warning("A ação foi concluída parcialmente.", {
+        description: `${succeededIds.length} concluída${succeededIds.length === 1 ? "" : "s"}; ${failures.length} precisa${failures.length === 1 ? "" : "m"} de atenção. ${description}`,
+      });
+      return;
+    }
+    toast.error(description);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4 py-32">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-300 dark:text-zinc-700" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Buscando cobranças...</p>
+      </div>
+    );
+  }
+
+  return (
+    <TooltipProvider delayDuration={150}>
+      <div className="finance-panel relative overflow-hidden rounded-[30px] border border-border/55 bg-card/82 p-6 shadow-[0_18px_54px_-46px_hsl(var(--foreground)/0.3)] dark:border-white/[0.075] dark:bg-zinc-900/[0.68] lg:p-7">
+        <div className="relative z-10 space-y-6">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex min-w-0 flex-1 items-center gap-3.5">
+              <div className="relative min-w-[280px] max-w-xl flex-1">
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                <input
+                  type="search"
+                  aria-label="Buscar cobranças"
+                  placeholder={scope === "management" ? "Buscar por paciente, descrição ou método" : "Buscar por descrição ou número"}
+                  value={searchQuery}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    setPage(1);
+                  }}
+                  className="h-12 w-full rounded-[14px] border border-zinc-200 bg-white pl-11 pr-4 text-sm font-medium text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-zinc-400 dark:border-white/10 dark:bg-white/[0.035] dark:text-white dark:focus:border-white/20"
+                />
+              </div>
+
+              <AdvancedFilters
+                activeFilters={activeFilters}
+                dueStart={dueStart}
+                dueEnd={dueEnd}
+                receivedStart={receivedStart}
+                receivedEnd={receivedEnd}
+                statusFilters={statusFilters}
+                typeFilters={typeFilters}
+                typeOptions={typeOptions}
+                setDueStart={setDueStart}
+                setDueEnd={setDueEnd}
+                setReceivedStart={setReceivedStart}
+                setReceivedEnd={setReceivedEnd}
+                toggleStatus={toggleStatus}
+                toggleType={toggleType}
+                clearFilters={clearFilters}
+              />
+            </div>
+
+            <div className="finance-inset flex shrink-0 flex-col gap-2 rounded-[18px] border border-border/55 bg-muted/45 p-1.5 dark:border-white/[0.07] dark:bg-white/[0.025] sm:flex-row">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-12 rounded-[14px] border-zinc-200 bg-white/70 px-5 text-[10px] font-black uppercase tracking-[0.16em] dark:border-white/10 dark:bg-white/[0.035]"
+                  >
+                    <MoreVertical className="mr-2 h-4 w-4" />
+                    Ações
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-72 rounded-[20px] border-zinc-200 bg-white/95 p-2 shadow-2xl dark:border-white/10 dark:bg-zinc-950/95">
+                  {scope === "management" ? (
+                    <>
+                      <BatchButton onClick={() => runBatchAction("paid")} icon={CheckCircle2}>Marcar como pagas</BatchButton>
+                      <BatchButton onClick={() => runBatchAction("cancel")} icon={Trash2} danger>Cancelar selecionadas</BatchButton>
+                    </>
+                  ) : (
+                    <>
+                      <BatchButton onClick={() => runBatchAction("sync")} icon={RefreshCw}>Sincronizar selecionadas</BatchButton>
+                      <BatchButton onClick={() => runBatchAction("copy")} icon={Copy}>Copiar links</BatchButton>
+                      <BatchButton onClick={() => runBatchAction("cancel")} icon={Trash2} danger>Excluir pendentes</BatchButton>
+                    </>
+                  )}
+                </PopoverContent>
+              </Popover>
+
+              {scope === "management" ? (
+                <>
+                  <Button
+                    onClick={() => setManualModalOpen(true)}
+                    className="h-12 rounded-[14px] bg-zinc-950 px-6 text-[10px] font-black uppercase tracking-[0.16em] text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nova cobrança
+                  </Button>
+                  <ManualChargeModal open={manualModalOpen} onOpenChange={setManualModalOpen} />
+                </>
+              ) : (
+                <NewInvoiceModal>
+                  <Button className="h-12 rounded-[14px] bg-zinc-950 px-6 text-[10px] font-black uppercase tracking-[0.16em] text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nova cobrança
+                  </Button>
+                </NewInvoiceModal>
+              )}
+            </div>
+          </div>
+
+          {initialStatusFilters.includes("overdue") && statusFilters.includes("overdue") ? (
+            <div className="finance-inset rounded-[18px] border border-border/55 bg-muted/40 px-5 py-4 text-xs font-semibold text-muted-foreground dark:border-white/[0.07] dark:bg-white/[0.025]">
+              Exibindo cobranças vencidas dentro de Cobranças.
+            </div>
+          ) : null}
+
+          <FinanceDataTable
+            rows={presentationRows}
+            context={scope === "management" ? "management_charges" : "neurofinance_charges"}
+            selectedIds={new Set(selectedIds)}
+            onToggleRow={(id) => toggleSelected(id)}
+            onToggleAll={() => toggleAllVisible()}
+            emptyTitle="Nenhuma cobrança encontrada"
+            emptyDescription="Ajuste os filtros ou crie uma cobrança. O histórico encerrado continua preservado."
+            renderActions={(row) => {
+              const charge = chargeById.get(row.id);
+              if (!charge) return null;
+              const providerManaged = isProviderManagedCharge(charge);
+              const isWorking = invoiceActions.runAction.isPending || updateEntry.isPending;
+              return (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="ghost" size="icon" className="ml-auto h-11 w-11 rounded-xl" aria-label={`Ações de ${charge.description}`}>
+                      <MoreVertical className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="finance-panel w-72 rounded-[20px] border-border/55 p-2 shadow-2xl">
+                    <BatchButton onClick={() => setSelectedCharge(charge)} icon={ExternalLink}>Abrir detalhes</BatchButton>
+                    {charge.scope === "management" && !providerManaged ? (
+                      charge.status === "paid" ? (
+                        <>
+                          <BatchButton onClick={() => undefined} icon={FileText} disabled>Emitir comprovante no detalhe</BatchButton>
+                          <BatchButton onClick={() => setPlannedOperation({ charge, operation: "reversal" })} icon={RotateCcw}>Preparar estorno</BatchButton>
+                        </>
+                      ) : (
+                        <>
+                          <BatchButton onClick={() => void updateManagementStatus(charge, "paid")} icon={CheckCircle2} disabled={isWorking || charge.status === "cancelled"}>Confirmar baixa</BatchButton>
+                          <BatchButton onClick={() => setPendingSingleRemoval(charge)} icon={Trash2} danger disabled={isWorking || charge.status === "cancelled"}>Cancelar cobrança</BatchButton>
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <BatchButton onClick={() => void runNeurofinanceAction(charge, "sync")} icon={RefreshCw} disabled={isWorking}>Sincronizar</BatchButton>
+                        <BatchButton
+                          onClick={async () => {
+                            const link = getPaymentLink(charge);
+                            if (!link) return;
+                            await navigator.clipboard.writeText(link);
+                            toast.success("Link copiado.");
+                          }}
+                          icon={Copy}
+                          disabled={!getPaymentLink(charge)}
+                        >
+                          Copiar link
+                        </BatchButton>
+                        {charge.status === "paid" ? (
+                          <BatchButton onClick={() => setPlannedOperation({ charge, operation: "refund" })} icon={RotateCcw}>Preparar reembolso</BatchButton>
+                        ) : (
+                          <BatchButton onClick={() => setPendingSingleRemoval(charge)} icon={Trash2} danger disabled={isWorking || !["pending", "overdue"].includes(charge.status)}>Excluir cobrança</BatchButton>
+                        )}
+                      </>
+                    )}
+                  </PopoverContent>
+                </Popover>
+              );
+            }}
+          />
+
+          <div className="flex flex-col gap-3 border-t border-border/55 px-1 pt-5 text-xs font-semibold text-zinc-500 dark:border-white/[0.06] dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              {charges.length} cobrança{charges.length === 1 ? "" : "s"} nesta página, somando {formatCurrency(totalAmount)}
+            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-zinc-400">{isFetching ? "Atualizando..." : `${total} cobrança${total === 1 ? "" : "s"} no total`}</span>
+              <Button variant="outline" size="sm" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page <= 1} className="h-9 rounded-full">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-[10px] font-black uppercase tracking-widest">{page}/{pageCount}</span>
+              <Button variant="outline" size="sm" onClick={() => setPage((current) => Math.min(pageCount, current + 1))} disabled={page >= pageCount} className="h-9 rounded-full">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <ChargeDetailDialog
+          charge={selectedCharge}
+          title={title}
+          patientName={selectedCharge ? patientName(selectedCharge) : ""}
+          onOpenChange={(open) => !open && closeChargeDetails()}
+          onCopyLink={async (row) => {
+            const link = getPaymentLink(row);
+            if (!link) return toast.info("Esta cobrança não possui link.");
+            await navigator.clipboard.writeText(link);
+            toast.success("Link copiado.");
+          }}
+          onMarkPaid={(row) => updateManagementStatus(row, "paid")}
+          onCancel={setPendingSingleRemoval}
+          onPrepareOperation={(charge, operation) => {
+            setSelectedCharge(null);
+            setPlannedOperation({ charge, operation });
+          }}
+          isWorking={invoiceActions.runAction.isPending || updateEntry.isPending}
+        />
+
+        {plannedOperation ? (
+          <FinanceOperationDialog
+            open
+            onOpenChange={(open) => !open && setPlannedOperation(null)}
+            operation={plannedOperation.operation}
+            description={plannedOperation.charge.description}
+            amount={plannedOperation.charge.amount}
+            availability={normalizeFinanceAvailability(plannedOperation.charge.fundsStatus, {
+              isNeuroFinance: isProviderManagedCharge(plannedOperation.charge),
+              status: normalizeFinanceStatus(plannedOperation.charge.status, { dueDate: plannedOperation.charge.dueDate }),
+              availableAt: plannedOperation.charge.availableAt,
+            })}
+          />
+        ) : null}
+
+        <AlertDialog open={pendingDestructiveBatch} onOpenChange={setPendingDestructiveBatch}>
+          <AlertDialogContent className="finance-modal-surface max-w-lg rounded-[28px] border-border/60 bg-background/95 p-6 shadow-2xl backdrop-blur-2xl dark:border-black/80 dark:bg-zinc-950/95">
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {scope === "management" ? "Cancelar cobranças selecionadas?" : "Excluir cobranças selecionadas?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="leading-relaxed">
+                {scope === "management"
+                  ? `${selectedRows.length} cobrança${selectedRows.length === 1 ? " será cancelada" : "s serão canceladas"}. Cobranças pagas exigem estorno e bloqueiam toda a ação.`
+                  : `${selectedRows.length} cobrança${selectedRows.length === 1 ? " será excluída" : "s serão excluídas"} na instituição financeira. Somente pendentes ou vencidas são elegíveis; a seleção é revalidada antes do envio.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-[14px]">Voltar</AlertDialogCancel>
+              <AlertDialogAction
+                className="rounded-[14px] bg-red-600 text-white hover:bg-red-700"
+                onClick={() => void runBatchAction("cancel", true)}
+              >
+                {scope === "management" ? "Confirmar cancelamento" : "Confirmar exclusão"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={Boolean(pendingSingleRemoval)} onOpenChange={(open) => !open && setPendingSingleRemoval(null)}>
+          <AlertDialogContent className="finance-modal-surface max-w-lg rounded-[28px] border-border/60 bg-background/95 p-6 shadow-2xl backdrop-blur-2xl dark:border-black/80 dark:bg-zinc-950/95">
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {pendingSingleRemoval && isProviderManagedCharge(pendingSingleRemoval) ? "Excluir esta cobrança?" : "Cancelar esta cobrança?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="leading-relaxed">
+                {pendingSingleRemoval && isProviderManagedCharge(pendingSingleRemoval)
+                  ? "A solicitação será enviada à instituição financeira e a cobrança sairá da lista ativa somente após a confirmação. Cobranças pagas ou em processamento não podem ser excluídas."
+                  : "O lançamento será encerrado sem apagar o histórico. Se já houver recebimento, use o fluxo de estorno."}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-[14px]">Voltar</AlertDialogCancel>
+              <AlertDialogAction
+                className="rounded-[14px] bg-red-600 text-white hover:bg-red-700"
+                onClick={() => {
+                  const row = pendingSingleRemoval;
+                  setPendingSingleRemoval(null);
+                  if (!row) return;
+                  if (isProviderManagedCharge(row)) void runNeurofinanceAction(row, "delete");
+                  else void updateManagementStatus(row, "cancelled");
+                }}
+              >
+                Confirmar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </TooltipProvider>
+  );
+}
+
+function BatchButton({ children, icon: Icon, onClick, danger, disabled }: { children: React.ReactNode; icon: typeof Search; onClick: () => void; danger?: boolean; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "flex min-h-11 w-full items-center gap-3 rounded-[14px] px-3 py-2.5 text-left text-xs font-bold text-zinc-600 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-45 dark:text-zinc-300 dark:hover:bg-white/[0.06]",
+        danger && "text-red-600 dark:text-red-300",
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      {children}
+    </button>
+  );
+}
+
+function AdvancedFilters({
+  activeFilters,
+  dueStart,
+  dueEnd,
+  receivedStart,
+  receivedEnd,
+  statusFilters,
+  typeFilters,
+  typeOptions,
+  setDueStart,
+  setDueEnd,
+  setReceivedStart,
+  setReceivedEnd,
+  toggleStatus,
+  toggleType,
+  clearFilters,
+}: {
+  activeFilters: number;
+  dueStart: string;
+  dueEnd: string;
+  receivedStart: string;
+  receivedEnd: string;
+  statusFilters: ChargeStatusFilter[];
+  typeFilters: ChargeTypeFilter[];
+  typeOptions: { id: ChargeTypeFilter; label: string }[];
+  setDueStart: (value: string) => void;
+  setDueEnd: (value: string) => void;
+  setReceivedStart: (value: string) => void;
+  setReceivedEnd: (value: string) => void;
+  toggleStatus: (id: ChargeStatusFilter) => void;
+  toggleType: (id: ChargeTypeFilter) => void;
+  clearFilters: () => void;
+}) {
+  return (
+    <SharedAdvancedFilterPopover activeFilters={activeFilters} onClear={clearFilters}>
+      <div className="grid gap-8 p-7 lg:grid-cols-[1.1fr_1fr_1.35fr]">
+        <div className="space-y-5">
+          <FilterDateGroup title="Período de vencimento" start={dueStart} end={dueEnd} onStart={setDueStart} onEnd={setDueEnd} />
+          <FilterDateGroup title="Período de recebimento" start={receivedStart} end={receivedEnd} onStart={setReceivedStart} onEnd={setReceivedEnd} />
+        </div>
+        <FilterCheckGroup title="Tipos de cobrança" options={typeOptions} selected={typeFilters} onToggle={toggleType} />
+        <FilterCheckGroup title="Situação das cobranças" options={filterStatusOptions} selected={statusFilters} onToggle={toggleStatus} twoColumns />
+      </div>
+    </SharedAdvancedFilterPopover>
+  );
+}
+
+function FilterDateGroup({ title, start, end, onStart, onEnd }: { title: string; start: string; end: string; onStart: (value: string) => void; onEnd: (value: string) => void }) {
+  return (
+    <div>
+      <p className="mb-3 text-sm font-black tracking-tight text-zinc-900 dark:text-white">{title}</p>
+      <div className="flex items-center gap-3">
+        <DateInput value={start} onChange={onStart} />
+        <span className="text-xs font-semibold text-zinc-400">até</span>
+        <DateInput value={end} onChange={onEnd} />
+      </div>
+    </div>
+  );
+}
+
+function DateInput({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return (
+    <div className="relative">
+      <input
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-11 w-[150px] rounded-[12px] border border-zinc-200 bg-white px-3 pr-9 text-xs font-bold text-zinc-700 outline-none dark:border-white/10 dark:bg-white/[0.035] dark:text-white"
+      />
+      <Calendar className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+    </div>
+  );
+}
+
+function FilterCheckGroup<T extends string>({
+  title,
+  options,
+  selected,
+  onToggle,
+  twoColumns = false,
+}: {
+  title: string;
+  options: { id: T; label: string }[];
+  selected: T[];
+  onToggle: (id: T) => void;
+  twoColumns?: boolean;
+}) {
+  return (
+    <div>
+      <p className="mb-4 text-sm font-black tracking-tight text-zinc-900 dark:text-white">{title}</p>
+      <div className={cn("grid gap-3", twoColumns ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
+        {options.map((option) => (
+          <label key={option.id} className="flex cursor-pointer items-center gap-3 text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+            <Checkbox checked={selected.includes(option.id)} onCheckedChange={() => onToggle(option.id)} />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChargeDetailDialog({
+  charge,
+  patientName,
+  onOpenChange,
+  onCopyLink,
+  onMarkPaid,
+  onCancel,
+  onPrepareOperation,
+  isWorking,
+}: {
+  charge: ChargeRow | null;
+  title?: string;
+  patientName: string;
+  onOpenChange: (open: boolean) => void;
+  onCopyLink: (charge: ChargeRow) => void;
+  onMarkPaid: (charge: ChargeRow) => void;
+  onCancel: (charge: ChargeRow) => void;
+  onPrepareOperation: (charge: ChargeRow, operation: FinanceOperationKind) => void;
+  isWorking: boolean;
+}) {
+  const providerManaged = charge ? isProviderManagedCharge(charge) : false;
+  const canonicalStatus = charge ? normalizeFinanceStatus(charge.status, { dueDate: charge.dueDate }) : "pending";
+  const availability = charge ? normalizeFinanceAvailability(charge.fundsStatus, { isNeuroFinance: providerManaged, status: canonicalStatus, availableAt: charge.availableAt }) : "not_applicable";
+
+  return (
+    <Dialog open={Boolean(charge)} onOpenChange={onOpenChange}>
+      <DialogContent className="finance-modal-surface max-w-2xl rounded-[28px] border-zinc-200 bg-white p-0 shadow-2xl dark:border-white/10 dark:bg-zinc-950">
+        {charge ? (
+          <>
+            <div className="finance-separator border-b border-zinc-200 px-6 py-5 dark:border-white/10">
+              <DialogTitle className="text-xl font-black tracking-tight text-zinc-950 dark:text-white">{charge.description}</DialogTitle>
+              <DialogDescription className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                {charge.scope === "management" ? "Cobrança gerencial" : "Cobrança bancária NeuroFinance"}
+              </DialogDescription>
+            </div>
+            <div className="space-y-4 p-6">
+              <div className="grid gap-3 md:grid-cols-2">
+                <Detail label="Paciente" value={patientName} />
+                <Detail label="Valor" value={formatCurrency(charge.amount)} />
+                <Detail label="Taxa" value={charge.feeAmount == null ? (providerManaged ? "A calcular" : "Não se aplica") : formatCurrency(charge.feeAmount)} />
+                <Detail label="Líquido" value={charge.netAmount == null ? (providerManaged ? "A calcular" : "Não se aplica") : formatCurrency(charge.netAmount)} />
+                <Detail label="Disponibilidade" value={FINANCE_AVAILABILITY_LABELS[availability]} />
+                <Detail label="Origem" value={chargeOriginLabel(charge)} />
+                <Detail label="Tipo" value={financeTypeLabel(charge.chargeType)} />
+                <Detail label="Método" value={charge.paymentMethod || "Não informado"} />
+                <Detail label="Competência · vencimento" value={dateLabel(charge.dueDate)} />
+                <Detail label="Recebimento" value={dateLabel(charge.paidAt)} />
+              </div>
+              <FinanceStatusBadge status={canonicalStatus} />
+              <div className="rounded-[18px] border border-border/55 bg-muted/35 p-4 text-xs font-medium leading-5 text-muted-foreground">
+                Cancelamento encerra uma cobrança não paga. Estorno reverte o lançamento ou movimento; reembolso devolve o valor ao pagador. Nenhum histórico pago será excluído.
+              </div>
+            </div>
+            <div className="finance-separator flex flex-wrap justify-end gap-2 border-t border-zinc-200 px-6 py-5 dark:border-white/10">
+              {charge.scope === "management" && !providerManaged ? (
+                charge.status === "paid" ? (
+                  <Button variant="outline" onClick={() => onPrepareOperation(charge, "reversal")} className="min-h-11 rounded-[14px]">
+                    <RotateCcw className="mr-2 h-4 w-4" /> Preparar estorno
+                  </Button>
+                ) : <>
+                  <Button onClick={() => onMarkPaid(charge)} disabled={isWorking} className="min-h-11 rounded-[14px] bg-foreground text-background hover:bg-foreground/90">
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Confirmar baixa
+                  </Button>
+                  <Button variant="outline" onClick={() => onCancel(charge)} disabled={isWorking || charge.status === "cancelled"} className="min-h-11 rounded-[14px] text-red-600 hover:text-red-700">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Cancelar
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {charge.links.receiptUrl ? <Button variant="outline" className="min-h-11 rounded-[14px]" onClick={() => window.open(charge.links.receiptUrl || "", "_blank", "noopener,noreferrer")}><FileText className="mr-2 h-4 w-4" />Comprovante Asaas</Button> : null}
+                  {charge.links.nfseUrl ? <Button variant="outline" className="min-h-11 rounded-[14px]" onClick={() => window.open(charge.links.nfseUrl || "", "_blank", "noopener,noreferrer")}><FileText className="mr-2 h-4 w-4" />Nota fiscal</Button> : null}
+                  <Button variant="outline" onClick={() => onCopyLink(charge)} disabled={!getPaymentLink(charge)} className="min-h-11 rounded-[14px]">
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copiar link
+                  </Button>
+                  {charge.status === "paid" ? <Button variant="outline" onClick={() => onPrepareOperation(charge, "refund")} className="min-h-11 rounded-[14px]"><RotateCcw className="mr-2 h-4 w-4" />Preparar reembolso</Button> : <Button variant="outline" onClick={() => onCancel(charge)} disabled={isWorking || !["pending", "overdue"].includes(charge.status)} className="min-h-11 rounded-[14px] text-red-600 hover:text-red-700"><Trash2 className="mr-2 h-4 w-4" />Excluir cobrança</Button>}
+                </>
+              )}
+            </div>
+          </>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[18px] border border-zinc-200 bg-zinc-50 p-4 dark:border-white/10 dark:bg-white/[0.035]">
+      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">{label}</p>
+      <p className="mt-2 text-sm font-bold text-zinc-950 dark:text-white">{value}</p>
+    </div>
+  );
+}

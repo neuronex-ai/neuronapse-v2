@@ -1,0 +1,141 @@
+/* NeuroFinance onboarding chrome/responsiveness — applies only while onboarding is mounted. */
+
+body.neurofinance-onboarding-active #navbar-container,
+body:has(.neurofinance-onboarding-screen) #navbar-container,
+body:has(.neurofinance-mobile-onboarding-shell) #navbar-container {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+body.neurofinance-onboarding-active .fixed.bottom-6.right-6.flex.flex-col.items-end.gap-3,
+body:has(.neurofinance-onboarding-screen) .fixed.bottom-6.right-6.flex.flex-col.items-end.gap-3,
+body:has(.neurofinance-mobile-onboarding-shell) .fixed.bottom-6.right-6.flex.flex-col.items-end.gap-3 {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.neurofinance-mobile-onboarding-shell {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  background: #020204 !important;
+  color: #fff !important;
+}
+
+.neurofinance-mobile-onboarding-shell > .fixed.inset-0 {
+  display: none !important;
+}
+
+.neurofinance-mobile-onboarding-shell > main {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0 !important;
+  background: #020204 !important;
+}
+
+.neurofinance-mobile-onboarding-shell > main > .absolute.inset-0.pointer-events-none.z-0 {
+  display: none !important;
+}
+
+.neurofinance-mobile-onboarding-shell > main > .relative.z-10.flex.flex-col.items-center.justify-center.h-full.px-6.pt-10 {
+  height: auto !important;
+  min-height: 100dvh !important;
+  justify-content: space-between !important;
+  padding: 5rem 1.35rem max(1.2rem, env(safe-area-inset-bottom)) !important;
+  gap: 1.5rem !important;
+}
+
+.neurofinance-mobile-onboarding-shell > main > .relative.z-10.flex.flex-col.items-center.justify-center.h-full.px-6.pt-10 > .flex.flex-col.items-center.text-center.max-w-lg.w-full {
+  width: 100% !important;
+  max-width: 27rem !important;
+  margin: auto 0 !important;
+}
+
+.neurofinance-mobile-onboarding-shell .w-20.h-20.rounded-\[24px\] {
+  width: 4.25rem !important;
+  height: 4.25rem !important;
+  border-radius: 1.35rem !important;
+  margin-bottom: 1.65rem !important;
+  box-shadow: 0 26px 70px -42px rgba(255, 255, 255, 0.55) !important;
+}
+
+.neurofinance-mobile-onboarding-shell h1 {
+  max-width: 20rem !important;
+  font-size: clamp(1.95rem, 8.8vw, 2.55rem) !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.055em !important;
+  margin-bottom: 1rem !important;
+}
+
+.neurofinance-mobile-onboarding-shell h1 + p {
+  max-width: 20.5rem !important;
+  margin-bottom: 2rem !important;
+  font-size: 0.86rem !important;
+  line-height: 1.55 !important;
+  color: rgba(255, 255, 255, 0.58) !important;
+}
+
+.neurofinance-mobile-onboarding-shell h1 + p + button {
+  width: 100% !important;
+  max-width: 23rem !important;
+  height: 3.25rem !important;
+  border-radius: 1rem !important;
+  font-size: 0.58rem !important;
+  letter-spacing: 0.24em !important;
+  margin-inline: auto !important;
+  box-shadow: 0 22px 64px -42px rgba(255, 255, 255, 0.68) !important;
+}
+
+.neurofinance-mobile-onboarding-shell > main > .relative.z-10.flex.flex-col.items-center.justify-center.h-full.px-6.pt-10 > .absolute.bottom-8.left-0.right-0.flex.justify-center.pb-safe {
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  margin-top: 1.35rem !important;
+  padding-bottom: 0 !important;
+  opacity: 0.58 !important;
+}
+
+.neurofinance-mobile-onboarding-shell > button[aria-label="Voltar"] {
+  top: max(1rem, env(safe-area-inset-top)) !important;
+  left: 1rem !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+@media (max-height: 690px) {
+  .neurofinance-mobile-onboarding-shell > main > .relative.z-10.flex.flex-col.items-center.justify-center.h-full.px-6.pt-10 {
+    justify-content: flex-start !important;
+    padding-top: 4.4rem !important;
+  }
+
+  .neurofinance-mobile-onboarding-shell .w-20.h-20.rounded-\[24px\] {
+    width: 3.8rem !important;
+    height: 3.8rem !important;
+    margin-bottom: 1.2rem !important;
+  }
+
+  .neurofinance-mobile-onboarding-shell h1 {
+    font-size: clamp(1.75rem, 8vw, 2.2rem) !important;
+  }
+
+  .neurofinance-mobile-onboarding-shell h1 + p {
+    margin-bottom: 1.35rem !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .neurofinance-mobile-onboarding-shell > main > .relative.z-10.flex.flex-col.items-center.justify-center.h-full.px-6.pt-10 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .neurofinance-mobile-onboarding-shell h1 {
+    font-size: 1.8rem !important;
+  }
+}

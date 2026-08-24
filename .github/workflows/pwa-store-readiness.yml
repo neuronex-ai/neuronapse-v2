@@ -1,0 +1,42 @@
+name: PWA Store Readiness
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "public/manifest.json"
+      - "public/firebase-messaging-sw.js"
+      - "public/offline.html"
+      - "src/main.tsx"
+      - "src/lib/push-notifications.ts"
+      - "index.html"
+      - "vercel.json"
+      - "scripts/validate-pwa.mjs"
+      - ".github/workflows/pwa-store-readiness.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate PWA manifest
+        run: node scripts/validate-pwa.mjs
+
+      - name: Build production app
+        run: npm run build

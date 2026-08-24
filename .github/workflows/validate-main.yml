@@ -1,0 +1,80 @@
+name: Validate main
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-main-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+          cache: npm
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.9.2
+          cache: true
+
+      - name: Use the project npm version
+        run: npm install --global npm@11.16.0
+
+      - name: Verify runtime versions
+        run: |
+          node --version
+          npm --version
+          deno --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint without warnings
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Validate frontend boundaries
+        run: npm run check:frontend-boundaries
+
+      - name: Run tests
+        run: npm test -- --reporter=dot
+
+      - name: Test Supabase Edge Functions
+        run: npm run test:deno
+
+      - name: Build application
+        run: npm run build
+
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

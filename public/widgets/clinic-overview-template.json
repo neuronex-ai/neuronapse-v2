@@ -1,0 +1,56 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "NeuroNex AI",
+      "weight": "Bolder",
+      "size": "Medium",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "${headline}",
+      "isSubtle": true,
+      "spacing": "Small",
+      "wrap": true
+    },
+    {
+      "type": "FactSet",
+      "spacing": "Medium",
+      "facts": [
+        {
+          "title": "Hoje",
+          "value": "${today}"
+        },
+        {
+          "title": "Alertas",
+          "value": "${alerts}"
+        },
+        {
+          "title": "Notas",
+          "value": "${notes}"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Execute",
+      "title": "Abrir painel",
+      "verb": "open-dashboard"
+    },
+    {
+      "type": "Action.Execute",
+      "title": "Agenda",
+      "verb": "open-agenda"
+    },
+    {
+      "type": "Action.Execute",
+      "title": "Nova nota",
+      "verb": "new-note"
+    }
+  ]
+}

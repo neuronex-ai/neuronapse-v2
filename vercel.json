@@ -1,0 +1,229 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/help",
+      "has": [{ "type": "query", "key": "view", "value": "neurofinance" }],
+      "destination": "/neurofinance",
+      "permanent": true
+    },
+    {
+      "source": "/help",
+      "has": [{ "type": "query", "key": "view", "value": "synapse" }],
+      "destination": "/synapse",
+      "permanent": true
+    },
+    {
+      "source": "/help",
+      "has": [{ "type": "query", "key": "view", "value": "contact" }],
+      "destination": "/contato",
+      "permanent": true
+    },
+    {
+      "source": "/help",
+      "has": [{ "type": "query", "key": "view", "value": "legal" }],
+      "destination": "/documentos-legais",
+      "permanent": true
+    },
+    {
+      "source": "/help",
+      "has": [{ "type": "query", "key": "view", "value": "terms" }],
+      "destination": "/termos-de-uso",
+      "permanent": true
+    },
+    {
+      "source": "/help",
+      "has": [{ "type": "query", "key": "view", "value": "privacy" }],
+      "destination": "/politica-de-privacidade",
+      "permanent": true
+    },
+    {
+      "source": "/help",
+      "has": [{ "type": "query", "key": "view", "value": "cookies" }],
+      "destination": "/configuracoes-de-cookies",
+      "permanent": true
+    },
+    { "source": "/help", "destination": "/ajuda", "permanent": true },
+    { "source": "/contact", "destination": "/contato", "permanent": true },
+    { "source": "/legal", "destination": "/documentos-legais", "permanent": true },
+    { "source": "/neurobank", "destination": "/neurofinance", "permanent": true },
+    { "source": "/funcionalidades", "destination": "/produto", "permanent": true },
+    { "source": "/precos", "destination": "/download", "permanent": true },
+    { "source": "/pricing", "destination": "/download", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/produto", "destination": "/public-pages/produto.html" },
+    { "source": "/download", "destination": "/public-pages/download.html" },
+    { "source": "/synapse", "destination": "/public-pages/synapse.html" },
+    { "source": "/neurofinance", "destination": "/public-pages/neurofinance.html" },
+    { "source": "/gestao-financeira-para-psicologos", "destination": "/public-pages/gestao-financeira-para-psicologos.html" },
+    { "source": "/neurobox", "destination": "/public-pages/neurobox.html" },
+    { "source": "/neurozap-para-psicologos", "destination": "/public-pages/neurozap-para-psicologos.html" },
+    { "source": "/pacientes-para-psicologos", "destination": "/public-pages/pacientes-para-psicologos.html" },
+    { "source": "/portal-do-paciente", "destination": "/public-pages/portal-do-paciente.html" },
+    { "source": "/teleconsulta-para-psicologos", "destination": "/public-pages/teleconsulta-para-psicologos.html" },
+    { "source": "/prontuario-para-psicologos", "destination": "/public-pages/prontuario-para-psicologos.html" },
+    { "source": "/agenda-para-psicologos", "destination": "/public-pages/agenda-para-psicologos.html" },
+    { "source": "/seguranca-e-etica", "destination": "/public-pages/seguranca-e-etica.html" },
+    { "source": "/comparar", "destination": "/public-pages/comparar.html" },
+    { "source": "/comparar/neuronex-vs-psicomanager", "destination": "/public-pages/comparar/neuronex-vs-psicomanager.html" },
+    { "source": "/comparar/neuronex-vs-psicogest", "destination": "/public-pages/comparar/neuronex-vs-psicogest.html" },
+    { "source": "/comparar/neuronex-vs-corpora", "destination": "/public-pages/comparar/neuronex-vs-corpora.html" },
+    { "source": "/comparar/neuronex-vs-sintropia", "destination": "/public-pages/comparar/neuronex-vs-sintropia.html" },
+    { "source": "/comparar/neuronex-vs-psipront", "destination": "/public-pages/comparar/neuronex-vs-psipront.html" },
+    { "source": "/comparar/neuronex-vs-terabase", "destination": "/public-pages/comparar/neuronex-vs-terabase.html" },
+    { "source": "/comparar/neuronex-vs-psinexus", "destination": "/public-pages/comparar/neuronex-vs-psinexus.html" },
+    { "source": "/blog", "destination": "/public-pages/blog.html" },
+    { "source": "/blog/:slug", "destination": "/public-pages/blog/:slug.html" },
+    { "source": "/novidades", "destination": "/public-pages/novidades.html" },
+    { "source": "/ajuda", "destination": "/public-pages/ajuda.html" },
+    { "source": "/contato", "destination": "/public-pages/contato.html" },
+    {
+      "source": "/documentos-legais",
+      "destination": "/public-pages/documentos-legais.html"
+    },
+    {
+      "source": "/termos-de-uso",
+      "destination": "/public-pages/termos-de-uso.html"
+    },
+    {
+      "source": "/politica-de-privacidade",
+      "destination": "/public-pages/politica-de-privacidade.html"
+    },
+    {
+      "source": "/configuracoes-de-cookies",
+      "destination": "/public-pages/configuracoes-de-cookies.html"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/public-pages/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(auth|email-confirmed|reset-password|create-account|account-created|google-connection-success|initial-settings|pwa-intent|dashboard|agenda|pacientes|notas|financeiro|ajustes|teleconsulta|neurozap|synapse-ai|portal|join|confirmar-agendamento|anamnese-externa|payment|id|404)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(auth|email-confirmed|reset-password|create-account|account-created|google-connection-success|initial-settings|pwa-intent|dashboard|agenda|pacientes|notas|financeiro|ajustes|teleconsulta|neurozap|synapse-ai|portal|join|confirmar-agendamento|anamnese-externa|payment|id|404)/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/confirmar-agendamento/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store, max-age=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/firebase-messaging-sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=(), payment=(self)"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://8x8.vc https://fonts.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://8x8.vc https://generativelanguage.googleapis.com https://*.googleapis.com https://*.firebaseio.com; frame-src 'self' https://8x8.vc https://www.instagram.com; media-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self';"
+        }
+      ]
+    }
+  ]
+}
