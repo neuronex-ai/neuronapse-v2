@@ -1,0 +1,128 @@
+/* V3 first-fold composition overrides.
+   Greeting and operational summary share one editorial row so the main
+   clinical scene begins earlier and fits common 820–900px desktop heights. */
+
+@media (min-width: 1221px) {
+  .dashboard-clinical-flow-v3 .dashboard-v3-stage {
+    display: grid;
+    grid-template-columns: minmax(245px, .7fr) minmax(0, 3.3fr);
+    gap: .75rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-header {
+    grid-column: 1;
+    min-height: 96px;
+    height: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: .7rem;
+    padding: .95rem 1.2rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-live {
+    font-size: .64rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-live span {
+    width: 6px;
+    height: 6px;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-overview {
+    grid-column: 2;
+    min-height: 96px;
+    margin-top: 0;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-overview-item {
+    padding-top: .8rem;
+    padding-bottom: .8rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-clinical-scene,
+  .dashboard-clinical-flow-v3 .dashboard-v3-context-band {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-clinical-scene {
+    min-height: 555px;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-synapse-content {
+    padding-top: clamp(1.55rem, 2.15vw, 2.5rem);
+    padding-bottom: 1.1rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-synapse-title h2 {
+    font-size: clamp(2.65rem, 3.75vw, 4.55rem);
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-synapse-title small {
+    margin-top: .55rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-composer {
+    margin-top: 1.15rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-composer textarea {
+    min-height: 112px;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-suggestions button {
+    min-height: 66px;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-timeline {
+    min-height: 214px;
+    margin-top: .85rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-timeline-row {
+    min-height: 52px;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-attention-list {
+    min-height: 150px;
+    margin-top: .75rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-context-section {
+    min-height: 94px;
+    padding-top: .8rem;
+    padding-bottom: .8rem;
+  }
+}
+
+@media (min-width: 1500px) and (max-height: 900px) {
+  .dashboard-clinical-flow-v3 .dashboard-v3-page-inner {
+    padding-inline: clamp(1.25rem, 2.35vw, 3rem);
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-stage {
+    padding: .7rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-clinical-scene {
+    min-height: 530px;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-synapse-title h2 {
+    font-size: clamp(2.55rem, 3.45vw, 4.15rem);
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-synapse-content {
+    padding-top: 1.55rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-composer textarea {
+    min-height: 102px;
+    padding-top: 1rem;
+  }
+
+  .dashboard-clinical-flow-v3 .dashboard-v3-focus-strip {
+    padding-top: .75rem;
+  }
+}
