@@ -1,5 +1,11 @@
+import { NeuroBoxGeminiHeroExperiment } from "@/components/public/NeuroBoxGeminiHeroExperiment";
 import { CatalogLanding } from "@/pages/public/CatalogLanding";
 
-const NeuroBoxLanding = () => <CatalogLanding route="/neurobox" />;
+const NeuroBoxLanding = () => (
+  <div className="relative isolate">
+    <NeuroBoxGeminiHeroExperiment />
+    <CatalogLanding route="/neurobox" />
+  </div>
+);
 
 export default NeuroBoxLanding;
