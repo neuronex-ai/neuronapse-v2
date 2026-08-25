@@ -16,7 +16,7 @@ import {
   Video,
   WalletCards,
 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, type Transition, useReducedMotion } from "framer-motion";
 import {
   type ElementType,
   type FormEvent,
@@ -54,6 +54,12 @@ const money = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 0,
 });
 
+const meshTransition = (duration: number): Transition => ({
+  duration,
+  ease: [0.45, 0, 0.3, 1],
+  repeat: Infinity,
+});
+
 const getFirstName = (profile: ReturnType<typeof useProfile>["data"]) => {
   const value = profile?.first_name || profile?.full_name || profile?.name || "";
   return value.trim().split(/\s+/)[0] || "profissional";
@@ -67,53 +73,44 @@ const isCancelled = (appointment: Appointment) =>
   appointment.visibility_status === "archived" ||
   String(appointment.lifecycle_status || appointment.status || "").toLowerCase().includes("cancel");
 
-const safeRoute = (value: string | null, fallback: string) =>
-  value?.startsWith("/") ? value : fallback;
-
 const WidgetIcon = ({ icon: Icon }: { icon: ElementType<{ className?: string }> }) => (
   <span className="dashboard-v4-widget-icon"><Icon className="h-4 w-4" /></span>
 );
 
-const AnimatedMesh = ({ reducedMotion }: { reducedMotion: boolean }) => {
-  const motionProps = reducedMotion
-    ? {}
-    : {
-        animate: {
-          x: ["-5%", "7%", "-2%", "-5%"],
-          y: ["-4%", "4%", "8%", "-4%"],
-          scale: [1, 1.12, 0.98, 1],
-          rotate: [0, 4, -3, 0],
-        },
-        transition: { duration: 22, ease: "easeInOut", repeat: Infinity },
-      };
-
-  const motionPropsSecondary = reducedMotion
-    ? {}
-    : {
-        animate: {
-          x: ["7%", "-8%", "3%", "7%"],
-          y: ["5%", "-7%", "1%", "5%"],
-          scale: [1.05, 0.96, 1.1, 1.05],
-          rotate: [2, -5, 3, 2],
-        },
-        transition: { duration: 28, ease: "easeInOut", repeat: Infinity },
-      };
-
-  return (
-    <div className="dashboard-v4-mesh" aria-hidden="true">
-      <motion.div className="dashboard-v4-mesh-blob dashboard-v4-mesh-blob-a" {...motionProps} />
-      <motion.div className="dashboard-v4-mesh-blob dashboard-v4-mesh-blob-b" {...motionPropsSecondary} />
-      <motion.div
-        className="dashboard-v4-mesh-blob dashboard-v4-mesh-blob-c"
-        {...(reducedMotion ? {} : {
-          animate: { x: ["0%", "5%", "-6%", "0%"], y: ["4%", "-3%", "5%", "4%"], scale: [1, 1.08, 1.03, 1] },
-          transition: { duration: 32, ease: "easeInOut", repeat: Infinity },
-        })}
-      />
-      <div className="dashboard-v4-mesh-vignette" />
-    </div>
-  );
-};
+const AnimatedMesh = ({ reducedMotion }: { reducedMotion: boolean }) => (
+  <div className="dashboard-v4-mesh" aria-hidden="true">
+    <motion.div
+      className="dashboard-v4-mesh-blob dashboard-v4-mesh-blob-a"
+      animate={reducedMotion ? undefined : {
+        x: ["-5%", "7%", "-2%", "-5%"],
+        y: ["-4%", "4%", "8%", "-4%"],
+        scale: [1, 1.12, 0.98, 1],
+        rotate: [0, 4, -3, 0],
+      }}
+      transition={reducedMotion ? undefined : meshTransition(22)}
+    />
+    <motion.div
+      className="dashboard-v4-mesh-blob dashboard-v4-mesh-blob-b"
+      animate={reducedMotion ? undefined : {
+        x: ["7%", "-8%", "3%", "7%"],
+        y: ["5%", "-7%", "1%", "5%"],
+        scale: [1.05, 0.96, 1.1, 1.05],
+        rotate: [2, -5, 3, 2],
+      }}
+      transition={reducedMotion ? undefined : meshTransition(28)}
+    />
+    <motion.div
+      className="dashboard-v4-mesh-blob dashboard-v4-mesh-blob-c"
+      animate={reducedMotion ? undefined : {
+        x: ["0%", "5%", "-6%", "0%"],
+        y: ["4%", "-3%", "5%", "4%"],
+        scale: [1, 1.08, 1.03, 1],
+      }}
+      transition={reducedMotion ? undefined : meshTransition(32)}
+    />
+    <div className="dashboard-v4-mesh-vignette" />
+  </div>
+);
 
 export const DesktopDashboardClinicalFlowV4 = () => {
   const navigate = useNavigate();
