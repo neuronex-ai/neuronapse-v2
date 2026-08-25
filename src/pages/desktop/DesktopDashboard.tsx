@@ -1,11 +1,11 @@
 "use client";
 
-import DesktopDashboardClinicalFlow from "@/components/dashboard/desktop/DesktopDashboardClinicalFlow";
-import "@/styles/dashboard-clinical-flow-v2.css";
+import DesktopDashboardClinicalFlowV3 from "@/components/dashboard/desktop/DesktopDashboardClinicalFlowV3";
+import "@/styles/dashboard-clinical-flow-v3.css";
 
 const DesktopDashboard = () => (
-  <div className="dashboard-clinical-flow-v2 finance-desktop notes-lumen-canvas">
-    <DesktopDashboardClinicalFlow />
+  <div className="dashboard-clinical-flow-v3 finance-desktop notes-lumen-canvas">
+    <DesktopDashboardClinicalFlowV3 />
   </div>
 );
 
