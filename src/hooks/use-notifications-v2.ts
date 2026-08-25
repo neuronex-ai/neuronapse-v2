@@ -67,30 +67,45 @@ export const useNotifications = ({ enableRealtime = false, syncBadge = false }: 
 
   useEffect(() => {
     if (!userId || !enableRealtime) return;
-    const channel = supabase.channel(`notifications:${userId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, (payload) => {
-      const row = payload.new as Row | undefined;
-      const previousId = String((payload.old as Partial<Row> | null)?.id || '');
 
-      if (payload.eventType === 'DELETE') {
-        updateCachedNotifications((current) => current.filter((item) => item.id !== previousId));
-        return;
-      }
+    // Each effect run gets its own topic. This avoids reusing an already-joined
+    // channel during React StrictMode remounts or when multiple consumers of
+    // this hook are mounted at the same time.
+    const channelName = `notifications:${userId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+    let active = true;
+    const channel = supabase
+      .channel(channelName)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, (payload) => {
+        if (!active) return;
 
-      if (row?.id) {
-        const item = map(row);
-        updateCachedNotifications((current) => {
-          const withoutCurrent = current.filter((candidate) => candidate.id !== item.id);
-          if (item.dismissedAt) return withoutCurrent;
-          return [item, ...withoutCurrent].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
-        });
-      }
+        const row = payload.new as Row | undefined;
+        const previousId = String((payload.old as Partial<Row> | null)?.id || '');
 
-      if (payload.eventType === 'INSERT') {
-        const item = map(payload.new as Row);
-        toast(item.title, { description: item.message, action: item.actionUrl ? { label: 'Abrir', onClick: () => { window.location.href = item.actionUrl!; } } : undefined });
-      }
-    }).subscribe();
-    return () => { void supabase.removeChannel(channel); };
+        if (payload.eventType === 'DELETE') {
+          updateCachedNotifications((current) => current.filter((item) => item.id !== previousId));
+          return;
+        }
+
+        if (row?.id) {
+          const item = map(row);
+          updateCachedNotifications((current) => {
+            const withoutCurrent = current.filter((candidate) => candidate.id !== item.id);
+            if (item.dismissedAt) return withoutCurrent;
+            return [item, ...withoutCurrent].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+          });
+        }
+
+        if (payload.eventType === 'INSERT') {
+          const item = map(payload.new as Row);
+          toast(item.title, { description: item.message, action: item.actionUrl ? { label: 'Abrir', onClick: () => { window.location.href = item.actionUrl!; } } : undefined });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      active = false;
+      void supabase.removeChannel(channel);
+    };
   }, [enableRealtime, updateCachedNotifications, userId]);
 
   useEffect(() => {
