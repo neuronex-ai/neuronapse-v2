@@ -1,18 +1,6 @@
 /* Dashboard V4 — focused hero tuning.
-   Keeps the V4 data/runtime intact while refining hierarchy and translating
-   the animated Framer mesh into a monochrome gradient-bars field. */
-
-.dashboard-clinical-flow-v4 {
-  --v4-bars-strong: hsl(var(--foreground) / 0.16);
-  --v4-bars-medium: hsl(var(--foreground) / 0.09);
-  --v4-bars-soft: hsl(var(--foreground) / 0.045);
-}
-
-.dark .dashboard-clinical-flow-v4 {
-  --v4-bars-strong: rgba(255, 255, 255, 0.19);
-  --v4-bars-medium: rgba(224, 228, 236, 0.095);
-  --v4-bars-soft: rgba(198, 204, 216, 0.045);
-}
+   Keeps the V4 data/runtime intact while replacing the old animated mesh with
+   a localized monochrome WebGL wave behind the Synapse composer. */
 
 /* Reorder the hero without touching data/runtime: Synapse -> date/name -> title. */
 .dashboard-v4-mark {
@@ -52,6 +40,9 @@
 
 .dashboard-v4-composer {
   order: 6;
+  position: relative;
+  isolation: isolate;
+  overflow: visible !important;
 }
 
 .dashboard-v4-suggestions {
@@ -62,105 +53,76 @@
   order: 8;
 }
 
-/*
-   Gradient-bars field.
-   The existing Framer Motion transforms continue driving the three layers;
-   these overrides turn the old blurred blobs into staggered bar groups.
-   The field is clipped to the lower hero so the title remains quiet.
-*/
+/* The former Framer gradient-bar field is intentionally retired. */
 .dashboard-v4-mesh {
-  clip-path: inset(56% 0 0 0);
-  opacity: 1;
+  display: none !important;
 }
 
-.dashboard-v4-mesh-blob {
-  top: auto !important;
-  right: auto !important;
-  border-radius: 0 !important;
-  transform-origin: 50% 100%;
-  will-change: transform, opacity;
-}
-
-.dashboard-v4-mesh-blob-a {
-  left: 3% !important;
-  bottom: -5% !important;
-  width: 94% !important;
-  height: 47% !important;
-  opacity: 0.82 !important;
-  filter: blur(7px) !important;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 18px,
-      var(--v4-bars-strong) 18px 28px,
-      transparent 28px 43px
-    ) !important;
-  -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.95) 28%, rgba(0,0,0,.48) 68%, transparent 100%);
-  mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.95) 28%, rgba(0,0,0,.48) 68%, transparent 100%);
-}
-
-.dashboard-v4-mesh-blob-b {
-  left: -8% !important;
-  bottom: -11% !important;
-  width: 116% !important;
-  height: 54% !important;
-  opacity: 0.66 !important;
-  filter: blur(19px) !important;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 31px,
-      var(--v4-bars-medium) 31px 49px,
-      transparent 49px 72px
-    ) !important;
-  -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.85) 34%, rgba(0,0,0,.34) 70%, transparent 100%);
-  mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.85) 34%, rgba(0,0,0,.34) 70%, transparent 100%);
-}
-
-.dashboard-v4-mesh-blob-c {
-  left: 8% !important;
-  bottom: -19% !important;
-  width: 84% !important;
-  height: 62% !important;
-  opacity: 0.78 !important;
-  filter: blur(34px) !important;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 44px,
-      var(--v4-bars-soft) 44px 75px,
-      transparent 75px 108px
-    ) !important;
-  -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.78) 44%, transparent 100%);
-  mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.78) 44%, transparent 100%);
-}
-
-/* A soft neutral horizon keeps the bars readable in both themes. */
-.dashboard-v4-mesh::before {
-  content: "";
+/*
+   Local WebGL scene. It is mounted inside the composer and sits on a negative
+   z-layer of that isolated stacking context, so the luminous wave remains
+   behind the text/actions while extending beyond the glass box.
+*/
+.dashboard-v4-composer-shader {
   position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 0;
-  height: 38%;
-  background: radial-gradient(ellipse at 50% 100%, hsl(var(--foreground) / 0.055), transparent 68%);
-  filter: blur(42px);
-  opacity: 0.75;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: min(1260px, 136vw);
+  height: clamp(250px, 28vw, 390px);
+  transform: translate3d(-50%, -49%, 0);
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.54;
+  filter: saturate(0) contrast(1.04);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,0,0,.34) 8%,
+    #000 20%,
+    #000 80%,
+    rgba(0,0,0,.34) 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,0,0,.34) 8%,
+    #000 20%,
+    #000 80%,
+    rgba(0,0,0,.34) 92%,
+    transparent 100%
+  );
+  transition: opacity 260ms cubic-bezier(.22,1,.36,1), transform 300ms cubic-bezier(.22,1,.36,1);
 }
 
-.dark .dashboard-v4-mesh::before {
-  background: radial-gradient(ellipse at 50% 100%, rgba(255,255,255,.075), transparent 68%);
+.dark .dashboard-v4-composer-shader {
+  opacity: 0.78;
+  filter: saturate(0) contrast(1.08);
+}
+
+.dashboard-v4-composer:focus-within .dashboard-v4-composer-shader {
   opacity: 0.68;
+  transform: translate3d(-50%, -49%, 0) scale(1.015);
 }
 
-.dashboard-v4-mesh-vignette {
-  background:
-    linear-gradient(180deg, transparent 54%, hsl(var(--background) / 0.08) 72%, hsl(var(--background) / 0.4) 100%) !important;
+.dark .dashboard-v4-composer:focus-within .dashboard-v4-composer-shader {
+  opacity: 0.9;
 }
 
-.dark .dashboard-v4-mesh-vignette {
-  background:
-    linear-gradient(180deg, transparent 54%, rgba(4,4,5,.06) 72%, rgba(4,4,5,.38) 100%) !important;
+/* Let the luminous curve read through the glass without weakening legibility. */
+.dashboard-v4-composer {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--background) / .58),
+    hsl(var(--background) / .38)
+  );
+  backdrop-filter: blur(36px) saturate(108%);
+  -webkit-backdrop-filter: blur(36px) saturate(108%);
+}
+
+.dark .dashboard-v4-composer {
+  background: linear-gradient(180deg, rgba(24,24,25,.66), rgba(10,10,11,.5));
 }
 
 /* Never break the subtitle at an arbitrary word. On narrower desktop/tablet
@@ -171,17 +133,27 @@
     white-space: nowrap;
     text-wrap: nowrap !important;
   }
+
+  .dashboard-v4-composer-shader {
+    width: 122vw;
+    height: 300px;
+    opacity: 0.48;
+  }
+
+  .dark .dashboard-v4-composer-shader {
+    opacity: 0.68;
+  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .dashboard-v4-context-kicker {
+  .dashboard-v4-context-kicker,
+  .dashboard-v4-composer {
     background: hsl(var(--background)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
-  .dashboard-v4-mesh-blob-a,
-  .dashboard-v4-mesh-blob-b,
-  .dashboard-v4-mesh-blob-c {
-    filter: none !important;
-    opacity: 0.08 !important;
+  .dashboard-v4-composer-shader {
+    opacity: 0.16 !important;
   }
 }
