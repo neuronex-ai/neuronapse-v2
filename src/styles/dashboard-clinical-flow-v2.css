@@ -1,0 +1,571 @@
+/* Dashboard Desktop — second-pass visual system
+   Reuses the same scale, Lumen language and retina depth already established
+   by Agenda, Notes and Finance without changing the dashboard data model. */
+
+.dashboard-clinical-flow-v2 {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow: clip;
+}
+
+.dashboard-clinical-flow-v2::before,
+.dashboard-clinical-flow-v2::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dashboard-clinical-flow-v2::before {
+  z-index: 0;
+  background:
+    radial-gradient(86rem 48rem at 50% -12%, hsl(var(--foreground) / 0.065) 0%, hsl(var(--foreground) / 0.026) 38%, transparent 76%),
+    radial-gradient(50rem 32rem at 7% 24%, hsl(var(--foreground) / 0.024) 0%, transparent 72%),
+    radial-gradient(48rem 30rem at 94% 18%, hsl(var(--foreground) / 0.02) 0%, transparent 72%);
+  opacity: 0.92;
+  animation: dashboard-lumen-drift 22s cubic-bezier(0.45, 0, 0.3, 1) infinite alternate;
+}
+
+.dashboard-clinical-flow-v2::after {
+  z-index: 0;
+  background-image: url("/noise.png");
+  background-size: 220px 220px;
+  opacity: 0.012;
+  mix-blend-mode: overlay;
+}
+
+.dark .dashboard-clinical-flow-v2::before {
+  background:
+    radial-gradient(90rem 52rem at 50% -14%, rgba(255, 255, 255, 0.092) 0%, rgba(225, 229, 242, 0.038) 37%, transparent 77%),
+    radial-gradient(50rem 34rem at 8% 22%, rgba(190, 199, 226, 0.026) 0%, transparent 73%),
+    radial-gradient(48rem 32rem at 92% 19%, rgba(188, 196, 222, 0.022) 0%, transparent 74%);
+  opacity: 0.88;
+}
+
+.dashboard-clinical-flow-v2 > .desktop-lumen-page {
+  position: relative;
+  z-index: 1;
+  padding-bottom: clamp(3.5rem, 6vw, 6.5rem) !important;
+}
+
+.dashboard-clinical-flow-v2 .page-spacing {
+  width: 100%;
+  max-width: 2200px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 2.8vw, 4.25rem) !important;
+}
+
+/* Main retina frame — same visual weight as Finance/Agenda. */
+.dashboard-clinical-flow-v2 .page-spacing > div {
+  padding: clamp(0.65rem, 0.85vw, 0.95rem) !important;
+  border-radius: 46px !important;
+  border-color: hsl(var(--border) / 0.55) !important;
+  background-color: hsl(var(--background) / 0.68) !important;
+  background-image:
+    linear-gradient(180deg, hsl(var(--background) / 0.72), transparent 33%),
+    linear-gradient(135deg, hsl(var(--foreground) / 0.026), transparent 46%) !important;
+  box-shadow:
+    inset 0 1px 0 hsl(var(--foreground) / 0.095),
+    inset 0 -1px 0 hsl(var(--foreground) / 0.02),
+    0 40px 118px -88px hsl(var(--foreground) / 0.6) !important;
+  backdrop-filter: blur(30px) saturate(112%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(112%) !important;
+}
+
+.dark .dashboard-clinical-flow-v2 .page-spacing > div {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+  background-color: rgba(8, 8, 9, 0.74) !important;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), transparent 36%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.014), transparent 48%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.54),
+    0 46px 130px -82px rgba(0, 0, 0, 0.98) !important;
+}
+
+/* Inner stage: visually one product surface, not a mosaic container. */
+.dashboard-clinical-flow-v2 .page-spacing > div > div:last-child > div {
+  overflow: visible !important;
+  border-radius: 38px !important;
+  background: transparent;
+}
+
+.dashboard-clinical-flow-v2 .page-spacing > div > div:last-child > div > header {
+  margin: 0.35rem 0.35rem 0.8rem;
+  padding: 1.15rem 1.4rem !important;
+  border: 1px solid hsl(var(--border) / 0.5) !important;
+  border-radius: 26px;
+  background-color: hsl(var(--background) / 0.54);
+  background-image: linear-gradient(180deg, hsl(var(--foreground) / 0.026), transparent 68%);
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.075), 0 18px 50px -44px hsl(var(--foreground) / 0.36);
+  backdrop-filter: blur(24px) saturate(108%);
+  -webkit-backdrop-filter: blur(24px) saturate(108%);
+}
+
+.dark .dashboard-clinical-flow-v2 .page-spacing > div > div:last-child > div > header {
+  border-color: rgba(255, 255, 255, 0.065) !important;
+  background-color: rgba(255, 255, 255, 0.025);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 72%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 20px 56px -46px rgba(0, 0, 0, 0.86);
+}
+
+.dashboard-clinical-flow-v2 .page-spacing > div > div:last-child > div > header p:first-child {
+  font-size: 0.68rem !important;
+  letter-spacing: 0.16em !important;
+}
+
+.dashboard-clinical-flow-v2 .page-spacing > div > div:last-child > div > header p:last-child {
+  margin-top: 0.35rem !important;
+  font-size: clamp(1rem, 1.15vw, 1.22rem) !important;
+  letter-spacing: -0.025em !important;
+}
+
+/* Three-part clinical field. Larger than v1, while keeping Synapse dominant. */
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] {
+  min-height: 820px !important;
+  gap: clamp(0.65rem, 0.85vw, 0.95rem);
+  padding: 0 0.35rem 0.35rem;
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: clamp(0.65rem, 0.85vw, 0.95rem);
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside > section,
+.dashboard-clinical-flow-v2 footer > section {
+  position: relative;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: clamp(1.25rem, 1.45vw, 1.65rem) !important;
+  border: 1px solid hsl(var(--border) / 0.55) !important;
+  border-radius: 30px;
+  background-color: hsl(var(--card) / 0.7);
+  background-image: linear-gradient(180deg, hsl(var(--background) / 0.34), transparent 48%);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--foreground) / 0.075),
+    0 24px 68px -56px hsl(var(--foreground) / 0.38);
+  backdrop-filter: blur(24px) saturate(108%);
+  -webkit-backdrop-filter: blur(24px) saturate(108%);
+}
+
+.dark .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside > section,
+.dark .dashboard-clinical-flow-v2 footer > section {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+  background-color: rgba(18, 18, 19, 0.72);
+  background-image: linear-gradient(155deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.008) 48%, rgba(0, 0, 0, 0.08));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.42),
+    0 28px 72px -56px rgba(0, 0, 0, 0.94);
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside > section:first-child {
+  flex: 1.12;
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside > section:last-child {
+  flex: 0.88;
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside > section > div:first-child,
+.dashboard-clinical-flow-v2 footer > section > div:first-child {
+  min-height: 44px;
+  margin-bottom: 1rem !important;
+  gap: 0.8rem !important;
+  padding-inline: 0 !important;
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside > section > div:first-child > span,
+.dashboard-clinical-flow-v2 footer > section > div:first-child > span {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+  border-color: hsl(var(--border) / 0.6) !important;
+  background-color: hsl(var(--background) / 0.58) !important;
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.06), 0 10px 26px -24px hsl(var(--foreground) / 0.45) !important;
+}
+
+.dark .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside > section > div:first-child > span,
+.dark .dashboard-clinical-flow-v2 footer > section > div:first-child > span {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+  background-color: rgba(255, 255, 255, 0.035) !important;
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside h2,
+.dashboard-clinical-flow-v2 footer h2 {
+  font-size: 0.78rem !important;
+  letter-spacing: 0.11em !important;
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside h2 + p,
+.dashboard-clinical-flow-v2 footer h2 + p {
+  margin-top: 0.25rem !important;
+  font-size: 0.7rem !important;
+}
+
+/* Existing row component receives the same physicality as Finance inset rows. */
+.dashboard-clinical-flow-v2 aside .group.flex.w-full.items-center.gap-3,
+.dashboard-clinical-flow-v2 footer .group.flex.w-full.items-center.gap-3 {
+  min-height: 60px;
+  margin-top: 0.35rem;
+  padding: 0.78rem 0.85rem !important;
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 18px !important;
+  background-color: hsl(var(--background) / 0.42);
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.045), 0 10px 26px -24px hsl(var(--foreground) / 0.34);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark .dashboard-clinical-flow-v2 aside .group.flex.w-full.items-center.gap-3,
+.dark .dashboard-clinical-flow-v2 footer .group.flex.w-full.items-center.gap-3 {
+  border-color: rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.024);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025), 0 12px 30px -26px rgba(0, 0, 0, 0.86);
+}
+
+@media (hover: hover) {
+  .dashboard-clinical-flow-v2 aside .group.flex.w-full.items-center.gap-3:hover,
+  .dashboard-clinical-flow-v2 footer .group.flex.w-full.items-center.gap-3:hover {
+    transform: translateY(-1px);
+    border-color: hsl(var(--foreground) / 0.14);
+    background-color: hsl(var(--foreground) / 0.05);
+  }
+
+  .dark .dashboard-clinical-flow-v2 aside .group.flex.w-full.items-center.gap-3:hover,
+  .dark .dashboard-clinical-flow-v2 footer .group.flex.w-full.items-center.gap-3:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.048);
+  }
+}
+
+.dashboard-clinical-flow-v2 aside .group.flex.w-full.items-center.gap-3 .text-xs,
+.dashboard-clinical-flow-v2 footer .group.flex.w-full.items-center.gap-3 .text-xs {
+  font-size: 0.8rem !important;
+}
+
+.dashboard-clinical-flow-v2 aside .group.flex.w-full.items-center.gap-3 [class*="text-[10px]"],
+.dashboard-clinical-flow-v2 footer .group.flex.w-full.items-center.gap-3 [class*="text-[10px]"] {
+  font-size: 0.69rem !important;
+}
+
+/* Synapse hero stage. */
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section {
+  position: relative;
+  min-height: 820px;
+  overflow: hidden;
+  padding: 0 !important;
+  border: 1px solid hsl(var(--border) / 0.55);
+  border-radius: 34px;
+  background-color: hsl(var(--card) / 0.72);
+  background-image:
+    radial-gradient(54rem 30rem at 50% 8%, hsl(var(--foreground) / 0.055), transparent 70%),
+    linear-gradient(180deg, hsl(var(--background) / 0.48), transparent 42%);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--foreground) / 0.09),
+    0 34px 92px -70px hsl(var(--foreground) / 0.56);
+  backdrop-filter: blur(28px) saturate(112%);
+  -webkit-backdrop-filter: blur(28px) saturate(112%);
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section::before {
+  content: "";
+  position: absolute;
+  inset: -20% -12% auto;
+  height: 54%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, hsl(var(--foreground) / 0.055), transparent 68%);
+  opacity: 0.8;
+  transform: translateZ(0);
+}
+
+.dark .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section {
+  border-color: rgba(255, 255, 255, 0.075);
+  background-color: rgba(13, 13, 14, 0.82);
+  background-image:
+    radial-gradient(58rem 32rem at 50% 6%, rgba(255, 255, 255, 0.08), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 44%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.48),
+    0 38px 104px -70px rgba(0, 0, 0, 0.98);
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section > div {
+  width: 100%;
+  max-width: 940px !important;
+  padding: clamp(2.4rem, 4vw, 4.75rem) clamp(2rem, 4vw, 4.5rem) !important;
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section h1 {
+  font-size: clamp(2.15rem, 3.1vw, 3.7rem) !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section h1::after {
+  content: "";
+  display: block;
+  width: 4.25rem;
+  height: 1px;
+  margin-top: 1rem;
+  background: linear-gradient(90deg, hsl(var(--foreground) / 0.38), transparent);
+}
+
+.dashboard-clinical-flow-v2 #dashboard-synapse-input {
+  min-height: 150px !important;
+  padding: 1.15rem 1.2rem !important;
+  font-size: clamp(1rem, 1.15vw, 1.18rem) !important;
+  line-height: 1.65 !important;
+  letter-spacing: -0.018em;
+}
+
+.dashboard-clinical-flow-v2 #dashboard-synapse-input::placeholder {
+  color: hsl(var(--muted-foreground) / 0.62);
+}
+
+.dashboard-clinical-flow-v2 #dashboard-synapse-input:focus {
+  outline: none;
+}
+
+.dashboard-clinical-flow-v2 #dashboard-synapse-input + div button {
+  width: 50px !important;
+  height: 50px !important;
+}
+
+.dashboard-clinical-flow-v2 #dashboard-synapse-input + div {
+  padding: 0.25rem 0.3rem 0.3rem !important;
+}
+
+.dashboard-clinical-flow-v2 #dashboard-synapse-input + div p {
+  font-size: 0.72rem !important;
+}
+
+.dashboard-clinical-flow-v2 #dashboard-synapse-input:focus-visible {
+  box-shadow: none;
+}
+
+.dashboard-clinical-flow-v2 #dashboard-synapse-input {
+  caret-color: hsl(var(--foreground));
+}
+
+.dashboard-clinical-flow-v2 #dashboard-synapse-input:where(:focus) {
+  background: transparent;
+}
+
+.dashboard-clinical-flow-v2 form:has(#dashboard-synapse-input) {
+  position: relative;
+  overflow: hidden;
+  padding: 0.85rem !important;
+  border-radius: 32px !important;
+  border-color: hsl(var(--border) / 0.65) !important;
+  background-color: hsl(var(--background) / 0.58) !important;
+  background-image: linear-gradient(160deg, hsl(var(--foreground) / 0.032), transparent 45%);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--foreground) / 0.11),
+    inset 0 -1px 0 hsl(var(--foreground) / 0.025),
+    0 30px 72px -58px hsl(var(--foreground) / 0.55) !important;
+  backdrop-filter: blur(28px) saturate(116%);
+  -webkit-backdrop-filter: blur(28px) saturate(116%);
+}
+
+.dark .dashboard-clinical-flow-v2 form:has(#dashboard-synapse-input) {
+  border-color: rgba(255, 255, 255, 0.085) !important;
+  background-color: rgba(255, 255, 255, 0.038) !important;
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.035), transparent 45%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.48),
+    0 34px 82px -56px rgba(0, 0, 0, 0.96) !important;
+}
+
+.dashboard-clinical-flow-v2 form:has(#dashboard-synapse-input):focus-within {
+  border-color: hsl(var(--foreground) / 0.18) !important;
+  box-shadow:
+    inset 0 1px 0 hsl(var(--foreground) / 0.13),
+    0 34px 84px -58px hsl(var(--foreground) / 0.62) !important;
+}
+
+.dashboard-clinical-flow-v2 [aria-label="Sugestões contextuais do Synapse"] {
+  gap: 0.7rem !important;
+  margin-top: 0.85rem !important;
+}
+
+.dashboard-clinical-flow-v2 [aria-label="Sugestões contextuais do Synapse"] > button {
+  min-height: 108px;
+  padding: 1rem 1.1rem !important;
+  border-radius: 22px !important;
+  border-color: hsl(var(--border) / 0.56) !important;
+  background-color: hsl(var(--background) / 0.45) !important;
+  background-image: linear-gradient(155deg, hsl(var(--foreground) / 0.026), transparent 52%);
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.07), 0 18px 44px -40px hsl(var(--foreground) / 0.45) !important;
+}
+
+.dark .dashboard-clinical-flow-v2 [aria-label="Sugestões contextuais do Synapse"] > button {
+  border-color: rgba(255, 255, 255, 0.065) !important;
+  background-color: rgba(255, 255, 255, 0.026) !important;
+  background-image: linear-gradient(155deg, rgba(255, 255, 255, 0.028), transparent 52%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 18px 46px -38px rgba(0, 0, 0, 0.9) !important;
+}
+
+.dashboard-clinical-flow-v2 [aria-label="Sugestões contextuais do Synapse"] > button span:first-child {
+  font-size: 0.64rem !important;
+  letter-spacing: 0.13em !important;
+}
+
+.dashboard-clinical-flow-v2 [aria-label="Sugestões contextuais do Synapse"] > button span:last-child {
+  margin-top: 0.45rem !important;
+  white-space: normal !important;
+  font-size: 0.82rem !important;
+  line-height: 1.3 !important;
+}
+
+.dashboard-clinical-flow-v2 form:has(#dashboard-synapse-input) ~ div:last-child {
+  min-height: 184px !important;
+  margin-top: 1rem !important;
+  padding: 1.3rem !important;
+  border-radius: 26px !important;
+  border-color: hsl(var(--border) / 0.5) !important;
+  background-color: hsl(var(--background) / 0.32) !important;
+  background-image: linear-gradient(145deg, hsl(var(--foreground) / 0.022), transparent 56%);
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.05);
+}
+
+.dark .dashboard-clinical-flow-v2 form:has(#dashboard-synapse-input) ~ div:last-child {
+  border-color: rgba(255, 255, 255, 0.055) !important;
+  background-color: rgba(255, 255, 255, 0.018) !important;
+}
+
+/* Footer behaves like two generous Notes/Finance workspaces instead of a thin strip. */
+.dashboard-clinical-flow-v2 footer {
+  display: grid;
+  gap: clamp(0.65rem, 0.85vw, 0.95rem);
+  padding: 0.45rem 0.35rem 0.35rem;
+  border: 0 !important;
+}
+
+.dashboard-clinical-flow-v2 footer > section {
+  min-height: 238px;
+  border-right: 1px solid hsl(var(--border) / 0.55) !important;
+}
+
+.dark .dashboard-clinical-flow-v2 footer > section {
+  border-right-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+.dashboard-clinical-flow-v2 footer .grid {
+  gap: 0.55rem !important;
+}
+
+.dashboard-clinical-flow-v2 button,
+.dashboard-clinical-flow-v2 [role="button"] {
+  touch-action: manipulation;
+}
+
+.dashboard-clinical-flow-v2 button:active,
+.dashboard-clinical-flow-v2 [role="button"]:active {
+  transform: scale(0.985);
+}
+
+@media (min-width: 1280px) {
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] {
+    grid-template-columns: minmax(280px, 0.84fr) minmax(610px, 1.55fr) minmax(290px, 0.9fr) !important;
+  }
+
+  .dashboard-clinical-flow-v2 footer {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  }
+}
+
+@media (min-width: 1536px) {
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] {
+    min-height: 860px !important;
+    grid-template-columns: minmax(310px, 0.86fr) minmax(680px, 1.62fr) minmax(315px, 0.9fr) !important;
+  }
+
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section {
+    min-height: 860px;
+  }
+}
+
+@media (max-width: 1279px) {
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] {
+    min-height: auto !important;
+  }
+
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section {
+    min-height: 680px;
+    order: -1;
+  }
+
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside > section {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 860px) {
+  .dashboard-clinical-flow-v2 .page-spacing {
+    padding-inline: 0.75rem !important;
+  }
+
+  .dashboard-clinical-flow-v2 .page-spacing > div {
+    padding: 0.55rem !important;
+    border-radius: 34px !important;
+  }
+
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section {
+    min-height: 620px;
+  }
+
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section > div {
+    padding: 2rem 1.25rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-clinical-flow-v2::before {
+    animation: none;
+  }
+
+  .dashboard-clinical-flow-v2 button,
+  .dashboard-clinical-flow-v2 [role="button"] {
+    transition: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .dashboard-clinical-flow-v2 .page-spacing > div,
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > section,
+  .dashboard-clinical-flow-v2 main [class*="min-h-[690px]"] > aside > section,
+  .dashboard-clinical-flow-v2 footer > section,
+  .dashboard-clinical-flow-v2 form:has(#dashboard-synapse-input) {
+    background-image: none !important;
+    background-color: hsl(var(--card)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+@keyframes dashboard-lumen-drift {
+  0% {
+    transform: translate3d(-0.5%, -0.2%, 0) scale(1.008);
+  }
+  100% {
+    transform: translate3d(0.5%, 0.25%, 0) scale(1.018);
+  }
+}
