@@ -4,6 +4,7 @@ import { Mic, MicOff, PhoneOff, RefreshCcw, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { SiriWave, type SiriWaveVariant } from "@/components/ui/siri-wave";
 import { useSynapseVoice } from "@/hooks/use-synapse-voice";
 import { useVoiceConfig } from "@/hooks/use-voice-config";
 import { cn } from "@/lib/utils";
@@ -184,6 +185,16 @@ export const DashboardSynapseVoiceOverlay = ({
                 ? localMessage || "Pode falar naturalmente."
                 : localMessage || "Conectando ao Synapse...";
 
+  const voiceVisualVariant: SiriWaveVariant | null = error
+    ? null
+    : isSpeaking
+      ? "wave"
+      : isProcessing || isToolActive || isStarting || voiceConfigLoading
+        ? "fluid-dots"
+        : null;
+
+  const voiceVisualSize = voiceVisualVariant === "wave" ? 330 : 226;
+
   if (!isOpen) return null;
 
   return (
@@ -234,27 +245,63 @@ export const DashboardSynapseVoiceOverlay = ({
         ) : null}
 
         <div className="flex min-h-[250px] flex-col items-center justify-center py-7 text-center">
-          <button
-            type="button"
-            onClick={() => (isConnected ? toggleListening() : void beginSession())}
-            disabled={isStarting || voiceConfigLoading}
-            aria-label={isConnected ? "Alternar escuta do Synapse" : "Iniciar conversa por voz"}
-            className={cn(
-              "relative flex h-24 w-24 items-center justify-center rounded-full border bg-foreground text-background shadow-[0_24px_74px_-42px_hsl(var(--foreground)/0.72)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 motion-reduce:transition-none",
-              isListening
-                ? "border-foreground/80"
-                : "border-foreground/55",
-            )}
-          >
-            {!error && (isListening || isSpeaking) ? (
-              <span className="absolute inset-[-10px] rounded-full border border-foreground/[0.1]" aria-hidden="true" />
-            ) : null}
-            {isListening ? (
-              <MicOff className="h-7 w-7" />
+          <div className="relative flex h-[178px] w-full items-center justify-center">
+            {voiceVisualVariant ? (
+              <div
+                className={cn(
+                  "relative flex h-[178px] w-full items-center justify-center overflow-visible",
+                  "after:pointer-events-none after:absolute after:left-1/2 after:top-1/2 after:h-36 after:w-72 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:bg-foreground/[0.035] after:blur-3xl",
+                  "dark:after:bg-white/[0.035]",
+                )}
+                data-voice-visual={voiceVisualVariant}
+              >
+                <SiriWave
+                  key={voiceVisualVariant}
+                  variant={voiceVisualVariant}
+                  size={voiceVisualSize}
+                  renderScale={voiceVisualVariant === "wave" ? 0.72 : 0.8}
+                  className={cn(
+                    "relative z-10 max-w-full rounded-none opacity-95",
+                    voiceVisualVariant === "wave"
+                      ? "scale-[1.04]"
+                      : "scale-100",
+                  )}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => (isConnected ? toggleListening() : void beginSession())}
+                  disabled={isStarting || voiceConfigLoading}
+                  aria-label={isConnected ? "Alternar escuta do Synapse" : "Iniciar conversa por voz"}
+                  className="absolute bottom-0 right-1/2 z-20 flex h-10 w-10 translate-x-[138px] items-center justify-center rounded-full border border-foreground/[0.09] bg-background/82 text-foreground shadow-[0_12px_32px_-18px_hsl(var(--foreground)/0.6)] backdrop-blur-2xl transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 dark:border-white/[0.07] dark:bg-black/35 dark:text-white motion-reduce:transition-none"
+                >
+                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </button>
+              </div>
             ) : (
-              <Mic className="h-7 w-7" />
+              <button
+                type="button"
+                onClick={() => (isConnected ? toggleListening() : void beginSession())}
+                disabled={isStarting || voiceConfigLoading}
+                aria-label={isConnected ? "Alternar escuta do Synapse" : "Iniciar conversa por voz"}
+                className={cn(
+                  "relative flex h-24 w-24 items-center justify-center rounded-full border bg-foreground text-background shadow-[0_24px_74px_-42px_hsl(var(--foreground)/0.72)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 motion-reduce:transition-none",
+                  isListening
+                    ? "border-foreground/80"
+                    : "border-foreground/55",
+                )}
+              >
+                {!error && isListening ? (
+                  <span className="absolute inset-[-10px] rounded-full border border-foreground/[0.1]" aria-hidden="true" />
+                ) : null}
+                {isListening ? (
+                  <MicOff className="h-7 w-7" />
+                ) : (
+                  <Mic className="h-7 w-7" />
+                )}
+              </button>
             )}
-          </button>
+          </div>
 
           <p
             className={cn(
