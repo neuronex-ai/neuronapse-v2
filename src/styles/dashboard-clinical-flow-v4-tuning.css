@@ -163,13 +163,13 @@
     linear-gradient(180deg, transparent 54%, rgba(4,4,5,.06) 72%, rgba(4,4,5,.38) 100%) !important;
 }
 
-/* Keep the sentence whole on desktop. On narrower desktop/tablet widths,
-   allow wrapping only after the layout becomes constrained. */
+/* Never break the subtitle at an arbitrary word. On narrower desktop/tablet
+   widths, preserve the sentence by reducing type slightly instead. */
 @media (max-width: 1040px) {
   .dashboard-v4-subtitle {
-    max-width: 760px !important;
-    white-space: normal;
-    text-wrap: balance !important;
+    font-size: clamp(.7rem, 1.15vw, .86rem) !important;
+    white-space: nowrap;
+    text-wrap: nowrap !important;
   }
 }
 
