@@ -1,7 +1,7 @@
 "use client";
 
-import { DesktopDashboardCommandCenter } from "@/components/dashboard/desktop/DesktopDashboardCommandCenter";
+import DesktopDashboardClinicalFlow from "@/components/dashboard/desktop/DesktopDashboardClinicalFlow";
 
-const DesktopDashboard = () => <DesktopDashboardCommandCenter />;
+const DesktopDashboard = () => <DesktopDashboardClinicalFlow />;
 
 export default DesktopDashboard;
